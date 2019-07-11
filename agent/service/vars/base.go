@@ -1,0 +1,1 @@
+package magent_vars

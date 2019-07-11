@@ -1,0 +1,161 @@
+Licensee's use of this software is conditioned upon acceptance of the
+following terms:
+
+MARCONI-D END USER LICENSE AGREEMENT
+
+
+THIS "SOFTWARE LICENSE AGREEMENT" ("AGREEMENT") IS BINDING ON THE USER
+UPON USE OF THE SOFTWARE PROVIDED WITH THIS AGREEMENT (THE
+"SOFTWARE"), OR USE OF ANY AUTHORIZATION CODE PROVIDED BY MARCONI. YOU
+ACKNOWLEDGE THAT YOU HAVE READ AND UNDERSTAND THIS AGREEMENT AND ARE
+BOUND BY ITS TERMS. IF YOU DO NOT AGREE WITH THE TERMS AND CONDITIONS
+OF THIS AGREEMENT, DO NOT USE THE SOFTWARE OR ANY AUTHORIZATION
+CODE. USE OF THE SOFTWARE IS SUBJECT AT ALL TIMES TO THE TERMS AND
+CONDITIONS HERE, INCLUDING ALL PROVISIONS REGARDING THE LIMITATIONS OF
+THE LICENSOR LIABILITY.
+
+1. License Grant.
+Marconi (the "Licensor") grants you (the "Licensee") a free,
+non-exclusive, non-transferable license to use the Software and any
+documentation files pertaining to the Software ("Documentation"). The
+Software covered under this Agreement is comprised of the contents of
+the Marconi-D software package, including any source code and any
+executable programs such as marconid and its platform-specific
+variants, and any associated configuration and data files used by the
+programs. The Software and Documentation shall be used only for
+Licensee's own personal, non-commercial use and not for the benefit of
+any other person or entity. Licensee is not allowed to resell the
+Software or Documentation. Licensee is allowed to embed/integrate the
+licensed Software in binary format only as part of a product based on
+the Software. All copyright notices in the Software and Documentation
+must be retained at all times.
+
+2. Confidentiality.
+You agree to maintain the confidentiality of Software and
+Documentation, and will not disclose Software or Documentation, or any
+information or materials related thereto, to any third party without
+the express written consent of Marconi. You further agree to take all
+reasonable measures to limit access to Software and Documentation only
+to those of your employees who reasonably require such access to
+perform their employment obligations and who are bound by
+confidentiality agreements with you (in order to maintain the
+confidentiality of Software and Documentation).
+
+3. IP Ownership.
+Licensee agrees that Marconi is the sole and exclusive owner of the
+Software and of all associated intellectual property (IP) and Licensee
+shall do nothing inconsistent with such ownership. Licensee further
+agrees to not claim ownership rights in the Software, or any
+derivative, compilation, translation or modification by any party. All
+the rights not expressly granted to Licensee herein are reserved to
+Marconi. You are not allowed to remove any Licensor copyright
+notices/credits and any proprietary legends/disclaimers from any copy
+of Software, Documentation or any component thereof.
+
+4. Restrictions.
+Licensee is not allowed to or assist any third party to: (a) create
+derivative works based on the Software or any part thereof, (b)
+reverse engineer, decompile, translate, adapt, or disassemble the
+Software or any part thereof; (c) attempt to create or otherwise
+reproduce in any form the source code from the object code of any
+portion or component of the Software; (d) sublicense the Software; (e)
+attempt to disable or circumvent any protection measure of the
+Software or assist third parties to do so; or (f) otherwise copy or
+transfer the Software or any portion thereof.
+
+5. Trademarks
+This Agreement does not grant Licensee permission to use the trade
+names, trademarks, service marks, or product names of Marconi or any
+of its Agents or Affiliates, except as required for reasonable and
+customary use in describing the origin of the Software.
+
+6. No Warranty.
+The Software is provided on an "AS IS" BASIS. To the extent permitted
+by applicable laws, Marconi provides the Software WITHOUT WARRANTIES
+OR CONDITIONS OF ANY KIND, either express or implied including any
+warranties of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR
+A PARTICULAR PURPOSE. Marconi does not warrant that the functions
+contained in the Software will meet any requirements or needs of the
+Licensor, or that the Software will operate error free, or in an
+uninterrupted fashion, or that any defects or errors in the Software
+will be corrected, or that the Software is compatible with any
+particular platform.
+
+7. Limitation of Liability.
+To the extent not prohibited by applicable laws, in no event shall the
+Marconi be liable to you or any third party for any incidental or
+consequential damages (including, without limitation, indirect,
+special, punitive or exemplary damages for loss of business, loss of
+profits, business interruption or loss of business information, loss
+of network connectivity, operation, or configuration, or loss of any
+configuration data or network operation data) arising out of or
+related to the use of or the inability to use the Software, or for any
+claim by any other party, even if advised of the possibility of such
+damages. The Software is not fault-tolerant and is not designed or
+intended for any kind of use requiring fail-safe performance, or in
+systems in which the failure of the Software could lead directly to
+death, personal injury or severe physical or environmental
+damage. Accordingly, Marconi specifically disclaims any express or
+implied warranty of fitness for such activities or use.
+
+8. Indemnity.
+Licensee shall indemnify irrevocably and unconditionally and without
+any exception whatsoever, Marconi and any affiliated agents, and hold
+them harmless against any and all losses, claims, challenges, demands
+either pending or threatened, damages or liabilities, direct or
+indirect, including reasonable attorneys' fees, to which they may
+become subject and arising in any manner out of or in connection with:
+a) any use of the Software or Documentation; b) any violation by
+Licensee of this Agreement, or c) any violation by Licensee of any
+rights of a third parties. You shall promptly notify Marconi if you
+become aware of any matter which may give rise to a liability under
+this indemnity.
+
+9. Accepting Warranty or Additional Liability.
+Licensee may redistribute the Software or derivative works thereof,
+and may choose to offer support, warranty, indemnity, or other
+liability obligations and/or rights consistent with this
+Agreement. However, in accepting such obligations, you may act only on
+your own behalf and on your sole responsibility, not on behalf of any
+other contributor. Licensee agrees to indemnify, defend, and hold each
+Licensor and contributor harmless for any liability incurred by, or
+claims asserted against, such contributor by reason of your accepting
+any such warranty or additional liability.
+
+10. Export Restrictions.
+You may not export the Software and Documentation or any part thereof
+in violation of applicable laws and regulations.
+
+11. Termination.
+Marconi may terminate this Agreement at any time in the event of
+Licensee violating any of its terms. Upon termination, Licensee must
+immediately destroy or return to Licensor the Software and
+Documentation. The provisions of IP Ownership, Restrictions,
+Confidentiality, No Warranty, Limitation of Liability, and
+Indemnification shall in any case survive the termination or
+expiration of this Agreement.
+
+12. Injunctive Relief.
+Except for the licenses and rights expressly granted to you by this
+Agreement, no other licenses or other rights are granted. You hereby
+agree and covenant that you shall not perform any act that exceeds the
+scope of the license granted to you by this Agreement in violation of
+Marconi's IP rights, and any such violation shall entitle the Licensor
+to obtain injunctive relief, in addition to any other remedy that
+Marconi may obtain.
+
+13. Governing Law.
+The Agreement and any dispute relating thereto will be governed by the
+laws of the State of California without regard to conflict/choice of
+law principles.
+
+14. Entire Agreement.
+This Agreement shall constitute the entire agreement between the
+parties; any waiver or modification of this Agreement shall be
+effective only if it is in writing and signed by both parties.
+
+15. Notices
+Should you have any questions concerning this License Agreement, or if
+you desire to contact Marconi for any reason, please write to:
+
+legal@marconi.org
