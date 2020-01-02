@@ -1,24 +1,39 @@
 package mcrypto_key
 
 import (
+  "../../../util"
   "../../peer"
   "../../rpc"
-  "../../../util"
   "crypto"
   "crypto/rand"
   "crypto/rsa"
   "encoding/base64"
   "errors"
-  "gitlab.neji.vm.tc/marconi/log"
+  "fmt"
+  mlog "github.com/MarconiProtocol/log"
   "net/http"
   "strings"
-
-  "fmt"
 )
 
+type PubKeyExchangeSYNArgs struct {
+  Payload string
+}
+
+type PubKeyExchangeSYNReply struct {
+  Payload string
+}
+
+type PubKeyExchangeService struct{}
+
+func (dhm *PubKeyExchangeService) PubKeyExchangeSYNRPC(r *http.Request, args *PubKeyExchangeSYNArgs, reply *PubKeyExchangeSYNReply) error {
+  return KeyManagerInstance().HandlePubKeyExchangeSYNRPC(r, args, reply)
+}
 
 func (km *KeyManager) registerRPCHandlers() {
-  rpc.RegisterRpcHandler(rpc.REQUEST_PUB_KEY_EXCHANGE_SYN, km.handlePubKeyExchangeSynRPC)
+  pubKeyExchangService := new(PubKeyExchangeService)
+  if err := rpc.RegisterService(pubKeyExchangService, ""); err != nil {
+    mlog.GetLogger().Error("Failed to register RPC service for KeyManager")
+  }
 }
 
 func (km *KeyManager) InitiatePublicKeyExchange(peerIp string, peerPubKeyHash string) error {
@@ -38,13 +53,15 @@ func (km *KeyManager) SendPubKeyExchangeSynRPC(targetHost string, peerPubKeyHash
   mlog.GetLogger().Debug(fmt.Sprintf("SendPubKeyExchangeSynRPC - Sending syn to %s", targetHost))
   payload := buildPubKeyExchangePayload(peerPubKeyHash, km.GetBasePublicKey(), km.GetBasePrivateKey())
 
-  response := rpc.SendRPC(targetHost, rpc.RPC_PORT, rpc.REQUEST_PUB_KEY_EXCHANGE_SYN, payload)
-  if response.Error != "" {
-    return errors.New(fmt.Sprintf("SendPubKeyExchangeSynRPC - Nil/error response from %s ; response %v", targetHost, response.Error))
+  args := PubKeyExchangeSYNArgs{Payload: payload}
+  reply := PubKeyExchangeSYNReply{}
+  cli := rpc.NewRPCClient(targetHost)
+  if err := cli.Call("PubKeyExchangeService.PubKeyExchangeSYNRPC", &args, &reply); err != nil {
+    return errors.New(fmt.Sprintf("SendPubKeyExchangeSynRPC - Nil/error response from %s ; response %v", targetHost, err))
   }
 
   mlog.GetLogger().Debug(fmt.Sprintf("SendPubKeyExchangeSynRPC - Received response from %s", targetHost))
-  signature, pubKeyHash, peerPubKeyHash, encodedPeerPubKey := parsePubKeyExchangePayload(response.Result)
+  signature, pubKeyHash, peerPubKeyHash, encodedPeerPubKey := parsePubKeyExchangePayload(reply.Payload)
   if !km.isRpcSenderReceiverValid(peerPubKeyHash, pubKeyHash) {
     return errors.New(fmt.Sprintf("handlePubKeyExchangeAckRPC - invalid rpc sender, not a peer %s", peerPubKeyHash))
   }
@@ -64,19 +81,18 @@ func (km *KeyManager) SendPubKeyExchangeSynRPC(targetHost string, peerPubKeyHash
   return nil
 }
 
-func (km *KeyManager) handlePubKeyExchangeSynRPC(r *http.Request, w http.ResponseWriter, reqInfohash string, reqPayload string) {
+func (km *KeyManager) HandlePubKeyExchangeSYNRPC(r *http.Request, args *PubKeyExchangeSYNArgs, reply *PubKeyExchangeSYNReply) error {
   // Using the sender IP in the http request; sender could be behind NAT
   ip, _, err := rpc.ParseIPAndPort(r.RemoteAddr)
   if err != nil {
-    mlog.GetLogger().Error("PubKeyExchange::handlePubKeyExchangeSynRPC - could not parse remote address / port from request")
-    return
+    mlog.GetLogger().Error("PubKeyExchange::handlePubKeyExchangeSynRPC - could not parse remote address / port from request: ", err)
+    return err
   }
 
-  signature, pubKeyHash, peerPubKeyHash, encodedPeerPubKey := parsePubKeyExchangePayload(reqPayload)
+  signature, pubKeyHash, peerPubKeyHash, encodedPeerPubKey := parsePubKeyExchangePayload(args.Payload)
   if !km.isRpcSenderReceiverValid(peerPubKeyHash, pubKeyHash) {
     mlog.GetLogger().Debug("PubKeyExchange::handlePubKeyExchangeSynRPC - invalid rpc sender, sender is not a peer")
-    err = rpc.WriteResponseWithError(&w, "Not recognized as a peer")
-    return
+    return errors.New("not recognized as a peer")
   }
   mlog.GetLogger().Debug("PubKeyExchange::handlePubKeyExchangeSynRPC - RECEIVED SYN from", r.RemoteAddr)
 
@@ -84,7 +100,7 @@ func (km *KeyManager) handlePubKeyExchangeSynRPC(r *http.Request, w http.Respons
   peerPubKey := decodePublicKeyB64String(encodedPeerPubKey)
   err = verifySignature(peerPubKey, signature, peerPubKeyHash, pubKeyHash, encodedPeerPubKey)
   if err != nil {
-    mlog.GetLogger().Fatal("Signature verification failed.")
+    mlog.GetLogger().Fatal("Signature verification failed: ", err)
   }
 
   mpeer.PeerManagerInstance().UpdatePeer(peerPubKeyHash, ip)
@@ -93,18 +109,15 @@ func (km *KeyManager) handlePubKeyExchangeSynRPC(r *http.Request, w http.Respons
   km.SetPeerPublicKey(peerPubKeyHash, peerPubKey)
 
   mlog.GetLogger().Debug("PubKeyExchange::SendPubKeyExchangeAckRPC - SENDING ACK to", ip)
-  payload := buildPubKeyExchangePayload(peerPubKeyHash, km.GetBasePublicKey(), km.GetBasePrivateKey())
-  err = rpc.WriteResponseWithResult(&w, payload)
-  if err != nil {
-    mlog.GetLogger().Debug(fmt.Sprintf("PubKeyExchange:: error writing to response: %s", err))
-  }
+  reply.Payload = buildPubKeyExchangePayload(peerPubKeyHash, km.GetBasePublicKey(), km.GetBasePrivateKey())
+  return nil
 }
 
 func buildPubKeyExchangePayload(peerPubKeyHash string, pubKey *rsa.PublicKey, privateKey *rsa.PrivateKey) string {
   // craft our payload
   pubKeyHash, err := mutil.GetInfohashByPubKey(pubKey)
   if err != nil {
-    mlog.GetLogger().Fatal("Failed to get pubkeyhash from pub key")
+    mlog.GetLogger().Fatal("Failed to get pubkeyhash from pub key: ", err)
   }
   encodedPubKey := encodePubKeyToB64String(pubKey)
   signature := createSignature(privateKey, peerPubKeyHash, pubKeyHash, encodedPubKey)
@@ -118,7 +131,7 @@ func parsePubKeyExchangePayload(payload string) (signature string, pubKeyHash st
   // base64 decode the payload
   payloadBytes, err := base64.StdEncoding.DecodeString(payload)
   if err != nil {
-    mlog.GetLogger().Error("Failed to decode pk exchange payload")
+    mlog.GetLogger().Error("Failed to decode pk exchange payload: ", err)
     return "", "", "", ""
   }
   payload = string(payloadBytes)
@@ -136,7 +149,7 @@ func (km *KeyManager) isRpcSenderReceiverValid(peerPubKeyHash string, pubKeyHash
   pubKey := km.GetBasePublicKey()
   actualPubKeyHash, err := mutil.GetInfohashByPubKey(pubKey)
   if err != nil {
-    mlog.GetLogger().Fatal("Failed to get pubkeyhash from pub key")
+    mlog.GetLogger().Fatal("Failed to get pubkeyhash from pub key: ", err)
   }
   // Check if this RPC call is actually meant for us
   return pubKeyHash == actualPubKeyHash
@@ -155,7 +168,7 @@ func createSignature(privateKey *rsa.PrivateKey, peerPubKeyHash string, pubKeyHa
 
   signatureBytes, err := rsa.SignPSS(rand.Reader, privateKey, newhash, hashed, &opts)
   if err != nil {
-    mlog.GetLogger().Fatal("Failed to generate signature")
+    mlog.GetLogger().Fatal("Failed to generate signature: ", err)
   }
   return base64.StdEncoding.EncodeToString(signatureBytes)
 }
@@ -174,7 +187,7 @@ func verifySignature(peerPubKey *rsa.PublicKey, signatureEncoded string, peerPub
 
   err = rsa.VerifyPSS(peerPubKey, newhash, hashed, signatureBytes, &opts)
   if err != nil {
-    mlog.GetLogger().Warn("Signature verification failed")
+    mlog.GetLogger().Warn("Signature verification failed: ", err)
   }
   return err
 }

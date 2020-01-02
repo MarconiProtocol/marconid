@@ -2,7 +2,7 @@ package mcrypto_dh
 
 import (
   "bytes"
-  "gitlab.neji.vm.tc/marconi/kyber"
+  "github.com/MarconiProtocol/kyber"
   "testing"
 )
 
@@ -20,7 +20,7 @@ func TestDHKeyInfo_EncodePublicKeyToString(t *testing.T) {
     fields fields
     want   string
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -57,7 +57,7 @@ func TestDHKeyInfo_DecodeStringToPeerPublicKey(t *testing.T) {
     args    args
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -89,7 +89,7 @@ func TestDHKeyInfo_GenDHSymmetricKey(t *testing.T) {
     name   string
     fields fields
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {

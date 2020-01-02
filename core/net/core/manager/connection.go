@@ -1,8 +1,8 @@
 package mnet_core_manager
 
 import (
-  "../../../runtime"
   "../../../crypto/key"
+  "../../../runtime"
   "../../if"
   "../../ip"
   "../../security"
@@ -11,8 +11,8 @@ import (
   "../transport"
   "bytes"
   "fmt"
+  mlog "github.com/MarconiProtocol/log"
   "github.com/pkg/errors"
-  "gitlab.neji.vm.tc/marconi/log"
   "net"
   "os"
   "strconv"
@@ -104,7 +104,7 @@ func (nm *NetCoreManager) CheckConnectionPortExists(port string) (bool, uint16) 
 /*
 	Create a connection to a peer using a TAP driver
 */
-func (nm *NetCoreManager) CreateTapConnection(netType NetworkType, netID string, transport mnet_core_transport.Transport, args *mnet_vars.ConnectionArgs) (*Connection, error) {
+func (nm *NetCoreManager) CreateTapConnection(transport mnet_core_transport.Transport, args *mnet_vars.ConnectionArgs) (*Connection, error) {
   var key []byte
 
   key, err := mcrypto_key.Keyfile_read(args.L2KeyFile)
@@ -147,16 +147,6 @@ func (nm *NetCoreManager) CreateTapConnection(netType NetworkType, netID string,
   connection.ID = connectionId
   connection.Port = args.LocalPort
   connection.TapConnection = tapConn
-
-  // Add the connection to the bridge
-  bridgeInfo, err := nm.GetBridgeInfoForNetwork(netType, netID)
-  if err != nil {
-    return nil, errors.New(fmt.Sprintf("Failed to get bridge info: %s", err))
-  }
-  err = nm.AddConnectionToBridge(bridgeInfo, connectionIDStr, args.RemoteIpAddr)
-  if err != nil {
-    return nil, errors.New(fmt.Sprintf("Failed to add connection to bridge: %s", err))
-  }
 
   // Start a goroutine for mutating key encryption
   go mnet_security.KeepUpdateDataKey(primaryDataKey, args.DataKeySignal, connection.ChannelKeyMutate)

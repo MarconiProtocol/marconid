@@ -3,8 +3,8 @@ package mcrypto_dh
 import (
   "errors"
   "fmt"
-  "gitlab.neji.vm.tc/marconi/kyber/group/edwards25519"
-  "gitlab.neji.vm.tc/marconi/log"
+  "github.com/MarconiProtocol/kyber/group/edwards25519"
+  mlog "github.com/MarconiProtocol/log"
   "sync"
 )
 

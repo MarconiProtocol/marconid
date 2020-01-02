@@ -1,12 +1,11 @@
 package mpacket_filter
 
 import (
+  "github.com/MarconiProtocol/gopacket"
+  m_packet_filter "github.com/MarconiProtocol/sdk/packet/filter"
   "reflect"
   "sync"
   "testing"
-
-  m_packet_filter "git.marconi.org/marconiprotocol/sdk/packet/filter"
-  "github.com/google/gopacket"
 )
 
 func TestGetFilterManagerInstance(t *testing.T) {
@@ -14,7 +13,7 @@ func TestGetFilterManagerInstance(t *testing.T) {
     name string
     want *PacketFilterManager
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -30,7 +29,7 @@ func TestPacketFilterManager_init(t *testing.T) {
     name          string
     filterManager *PacketFilterManager
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -44,7 +43,7 @@ func TestPacketFilterManager_loadConfig(t *testing.T) {
     name          string
     filterManager *PacketFilterManager
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -58,7 +57,7 @@ func TestPacketFilterManager_loadFilter(t *testing.T) {
     name          string
     filterManager *PacketFilterManager
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -77,7 +76,7 @@ func TestPacketFilterManager_ProcessPacket(t *testing.T) {
     filterManager *PacketFilterManager
     args          args
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -95,7 +94,7 @@ func Test_calculateFinalResult(t *testing.T) {
     args args
     want PacketFilterResult
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -117,7 +116,7 @@ func Test_runFilter(t *testing.T) {
     name string
     args args
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {

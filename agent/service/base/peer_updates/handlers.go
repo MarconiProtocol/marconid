@@ -8,7 +8,7 @@ import (
   "../../../../core/net/dht"
   "../../../../core/peer"
   "fmt"
-  "gitlab.neji.vm.tc/marconi/log"
+  mlog "github.com/MarconiProtocol/log"
 )
 
 /*

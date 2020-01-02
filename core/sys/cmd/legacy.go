@@ -1,13 +1,13 @@
 package msys_cmd
 
 import (
+  "./vars"
   "bytes"
   "fmt"
-  "gitlab.neji.vm.tc/marconi/log"
+  mlog "github.com/MarconiProtocol/log"
   "io"
   "os"
   "os/exec"
-  "./vars"
 )
 
 func ExecuteCommand(cmd string, cmdArgs []string) (result string) {
@@ -43,7 +43,6 @@ func ExecuteCommandPipe(cmd1 string, cmd1Args []string, cmd2 string, cmd2Args []
   io.Copy(os.Stdout, &result)
   return
 }
-
 
 func ExecuteSequencialIdenticalCommand(cmd string, cmdArgsList map[int][]string) (result map[int]string) {
   result = make(map[int]string)
@@ -92,5 +91,3 @@ func Pipeline(cmds ...*exec.Cmd) (pipeLineOutput, collectedStandardError []byte,
   // Return the pipeline output and the collected standard error
   return output.GetBytes(), stderr.GetBytes(), nil
 }
-
-

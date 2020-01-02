@@ -4,9 +4,9 @@ package mnet_core_base
 
 import (
   "fmt"
-  "github.com/vishvananda/netlink/nl"
-  "gitlab.neji.vm.tc/marconi/log"
-  "gitlab.neji.vm.tc/marconi/netlink"
+  mlog "github.com/MarconiProtocol/log"
+  "github.com/MarconiProtocol/netlink"
+  "github.com/MarconiProtocol/netlink/nl"
   "io/ioutil"
 )
 

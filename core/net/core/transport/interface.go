@@ -1,9 +1,8 @@
 package mnet_core_transport
 
 import (
-  "net"
-
   "../../if"
+  "net"
 )
 
 type Transport interface {

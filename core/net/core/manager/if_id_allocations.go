@@ -10,6 +10,9 @@ const (
   TUN_ID_MAX             uint16 = 1024
   SERVICE_BRIDGE_ID_BASE uint8  = 42
   SERVICE_BRIDGE_ID_MAX  uint8  = 60
+
+  EDGE_BRIDGE_ID_BASE uint8 = 100
+  EDGE_BRIDGE_ID_MAX  uint8 = 120
 )
 
 /*
@@ -17,6 +20,7 @@ const (
 */
 type InterfaceIDAllocations struct {
   serviceBridgeIds []bool
+  edgeBridgeIds    []bool
   connectionIds    []bool // true when allocated
   sync.Mutex
 }
@@ -25,6 +29,7 @@ func initializeInterfaceIdAllocations() *InterfaceIDAllocations {
   ifIdAllocations := InterfaceIDAllocations{
     connectionIds:    make([]bool, TUN_ID_MAX-TUN_ID_BASE+1),
     serviceBridgeIds: make([]bool, SERVICE_BRIDGE_ID_MAX-SERVICE_BRIDGE_ID_BASE+1),
+    edgeBridgeIds:    make([]bool, EDGE_BRIDGE_ID_MAX-EDGE_BRIDGE_ID_BASE+1),
   }
   return &ifIdAllocations
 }
@@ -59,6 +64,22 @@ func (nm *NetCoreManager) allocateNextServiceBridgeId() (uint8, error) {
     }
   }
   return 0, errors.New("allocateNextServiceBridgeId -> couldnt find an unallocated service bridge ID")
+}
+
+/*
+	Allocate the next available bridge interface id and return it, otherwise returns an error
+*/
+func (nm *NetCoreManager) allocateNextEdgeBridgeId() (uint8, error) {
+  nm.ifaceIDAllocations.Lock()
+  defer nm.ifaceIDAllocations.Unlock()
+
+  for i, allocated := range nm.ifaceIDAllocations.edgeBridgeIds {
+    if !allocated {
+      nm.ifaceIDAllocations.edgeBridgeIds[i] = true
+      return uint8(i) + EDGE_BRIDGE_ID_BASE, nil
+    }
+  }
+  return 0, errors.New("allocateNextEdgeBridgeId -> couldnt find an unallocated edge bridge ID")
 }
 
 /*

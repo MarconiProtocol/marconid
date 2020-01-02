@@ -2,39 +2,42 @@ package mconfig
 
 import (
   "../net/vars"
+  "../rpc"
   "fmt"
+  mlog "github.com/MarconiProtocol/log"
   "github.com/fsnotify/fsnotify"
+  "github.com/pkg/errors"
   "github.com/spf13/viper"
-  "gitlab.neji.vm.tc/marconi/log"
+  "net/http"
   "os"
   "path/filepath"
 )
 
-const CONFIG_PATH = "/opt/marconi/etc/marconid"
+const CONFIG_PATH = "/etc/marconid"
 const CONFIG_EXT = "yml"
 
-var appConfigViperInst  *viper.Viper
+var appConfigViperInst *viper.Viper
 var userConfigViperInst *viper.Viper
 
-func InitializeConfigs() {
-  InitializeAppConfig()
-  InitializeUserConfig()
+func InitializeConfigs(baseDir string) {
+  InitializeAppConfig(baseDir)
+  InitializeUserConfig(baseDir)
+  userConfigService := new(UserConfigService)
+  if err := rpc.RegisterService(userConfigService, ""); err != nil {
+    mlog.GetLogger().Error("Failed to register RPC service for UserConfig")
+  }
 }
 
 // initialize the appConfig object by parsing the appConfig file each time it's updated
 // config_manager.go is kept outside of package "appConfig" on purpose so that we can avoid cyclic reference
 // for packages that need to access the appConfig object, yet also expect to be notified when appConfig file changes
-func InitializeAppConfig() {
+func InitializeAppConfig(baseDir string) {
   appConfigViperInst = viper.New()
 
   configName := "config"
-  configFilename := filepath.Join(CONFIG_PATH, "config_dev."+CONFIG_EXT)
-  if _, err := os.Stat(configFilename); !os.IsNotExist(err) {
-    configName = "config_dev"
-  }
   appConfigViperInst.SetConfigName(configName)
   appConfigViperInst.SetConfigType(CONFIG_EXT)
-  appConfigViperInst.AddConfigPath(CONFIG_PATH)
+  appConfigViperInst.AddConfigPath(baseDir + CONFIG_PATH)
 
   // set default value for required configs
   setAppConfigDefaults()
@@ -70,42 +73,37 @@ func readAndLoadAppConfig() {
   LoadAppConfig()
 }
 
-
-func InitializeUserConfig() {
+func InitializeUserConfig(baseDir string) {
   userConfigViperInst = viper.New()
 
   configName := "user_config"
   userConfigViperInst.SetConfigName(configName)
   userConfigViperInst.SetConfigType(CONFIG_EXT)
-  userConfigViperInst.AddConfigPath(CONFIG_PATH)
+  userConfigViperInst.AddConfigPath(baseDir + CONFIG_PATH)
 
   // set default value for required configs
-  setUserConfigDefaults()
+  setUserConfigDefaults(baseDir)
 
-  // read in the appConfig file
-  readAndLoadUserConfig()
+  // read in user_config.yml
+  readAndLoadUserConfig(baseDir)
 
-  // triggered on initial read and every time appConfig is modified
+  // triggered on initial read and every time user_config.yml is modified
   // make sure any functions called within OnConfigChange are thread-safe
   userConfigViperInst.OnConfigChange(func(event fsnotify.Event) {
-    // read in appConfig file
-    readAndLoadUserConfig()
+    // read in user_config.yml
+    readAndLoadUserConfig(baseDir)
     fmt.Println("Config file changed:", event.Name)
   })
-  // watch the appConfig for file change
+  // watch the user_config.yml for file change
   userConfigViperInst.WatchConfig()
 }
 
-// tell viper to read in appConfig file and parse it
-func readAndLoadUserConfig() {
+// tell viper to read user_config.yml and parse it
+func readAndLoadUserConfig(baseDir string) {
   if err := userConfigViperInst.ReadInConfig(); err != nil {
-    mlog.GetLogger().Error("ERROR READING USER CONF: ", err)
-
     switch err.(type) {
     case viper.ConfigFileNotFoundError:
-      // pass if appConfig file does not exist
-      mlog.GetLogger().Error("ERROR IS TYPED AS CONFIG FILE NOT FOUND ")
-      err := createDefaultUserConfigFile()
+      err := createDefaultUserConfigFile(baseDir)
       if err != nil {
         mlog.GetLogger().Error(fmt.Sprintf("Error creating default user config file, %s\n", err.Error()))
         os.Exit(1)
@@ -115,48 +113,69 @@ func readAndLoadUserConfig() {
       os.Exit(1)
     }
   }
-  // parse appConfig file into their corresponding struct
+  // parse user_config.yml into its corresponding struct
   LoadUserConfig()
 }
 
-func createDefaultUserConfigFile() error {
-  userConfigFilename := filepath.Join(CONFIG_PATH, "user_config."+CONFIG_EXT)
-  f, err := os.Create(userConfigFilename)
-  if err != nil {
-    return err
-  }
-  f.Close()
-
-  userConfigViperInst.Set("blockchain.networkContractAddress", mnet_vars.EMPTY_CONTRACT_ADDRESS)
-  userConfigViperInst.Set("blockchain.chainId", 161027)
-
-  return userConfigViperInst.WriteConfig()
+func createDefaultUserConfigFile(baseDir string) error {
+  userConfigFilename := filepath.Join(baseDir, CONFIG_PATH, "user_config."+CONFIG_EXT)
+  setUserConfigDefaults(baseDir)
+  return userConfigViperInst.WriteConfigAs(userConfigFilename)
 }
 
 // set the default value for the required configs, defaults are overridden by appConfig file if they exist
 func setAppConfigDefaults() {
-  // a list of seed nodes used for the initial peer discovery in the DHT (comma separated)
-  appConfigViperInst.SetDefault("dht.bootnodes",
-      "<NOT_CONFIGURED>:24801"
-  )
   // max number of packets handled per second, increase this if bootnode is overwhelmed (set to negative for unlimited)
-  appConfigViperInst.SetDefault("dht.maxIncomingPacketsPerSecond", 100000)
+  appConfigViperInst.SetDefault("dht.max_incoming_packets_per_second", 100000)
   // ignore a client's request packet if exceeds this limit, guard against spammy clients
-  appConfigViperInst.SetDefault("dht.maxPerClientIncomingPacketsPerMinute", 500)
+  appConfigViperInst.SetDefault("dht.max_per_client_incoming_packets_per_minute", 500)
   // announce itself to the DHT every x seconds
-  appConfigViperInst.SetDefault("dht.announceSelfIntervalSeconds", 5)
+  appConfigViperInst.SetDefault("dht.announce_base_interval_seconds", 60)
+  // announce itself to the DHT every x seconds
+  appConfigViperInst.SetDefault("dht.announce_self_interval_seconds", 15)
   // send find peers request to the DHT every x seconds
-  appConfigViperInst.SetDefault("dht.requestPeersIntervalSeconds", 5)
+  appConfigViperInst.SetDefault("dht.request_peers_interval_seconds", 5)
   // determines whether DHT persist routing table to disk periodically and read it on startup
-  appConfigViperInst.SetDefault("dht.cacheRoutingTableToDisk", false)
+  appConfigViperInst.SetDefault("dht.cache_routing_table_to_disk", true)
 
   appConfigViperInst.SetDefault("log.dir", ".")
   appConfigViperInst.SetDefault("log.level", "warn")
 
-  appConfigViperInst.SetDefault("global.vlanFilterEnabled", false)
+  appConfigViperInst.SetDefault("global.vlan_filter_enabled", false)
+
+  appConfigViperInst.SetDefault("global.bridge_ageing_time_seconds", 30)
 }
 
-func setUserConfigDefaults() {
-  userConfigViperInst.SetDefault("blockchain.networkContractAddress", mnet_vars.EMPTY_CONTRACT_ADDRESS)
-  userConfigViperInst.SetDefault("blockchain.chainId", 161027)
+func setUserConfigDefaults(baseDir string) {
+  userConfigViperInst.SetDefault("global.base_dir", baseDir)
+  userConfigViperInst.SetDefault("blockchain.network_contract_address", mnet_vars.EMPTY_CONTRACT_ADDRESS)
+}
+
+type UserConfigService struct{}
+
+type UpdateNetworkContractAddressArgs struct {
+  NetworkContractAddress string
+}
+
+type UpdateNetworkContractAddressReply struct{}
+
+func (u *UserConfigService) UpdateNetworkContractAddressRPC(r *http.Request, args *UpdateNetworkContractAddressArgs, reply *UpdateNetworkContractAddressReply) error {
+  // if the folder does not exist
+  if _, err := os.Stat(CONFIG_PATH); os.IsNotExist(err) {
+    if err1 := os.MkdirAll(CONFIG_PATH, os.ModePerm); err1 != nil {
+      return err1
+    }
+  }
+
+  // write to user_conf.yml
+  if GetUserConfig().Blockchain.Network_Contract_Address == mnet_vars.EMPTY_CONTRACT_ADDRESS {
+    userConfigViperInst.Set("blockchain.network_contract_address", args.NetworkContractAddress)
+    if err := userConfigViperInst.WriteConfig(); err != nil {
+      return err
+    } else {
+      return nil
+    }
+  } else {
+    return errors.New("Join network skipped, user is already part of network: " + GetUserConfig().Blockchain.Network_Contract_Address)
+  }
 }

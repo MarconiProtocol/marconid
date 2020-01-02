@@ -3,8 +3,8 @@ package mcrypto_dh
 import (
   "bytes"
   "encoding/base64"
-  "gitlab.neji.vm.tc/marconi/kyber"
-  "gitlab.neji.vm.tc/marconi/log"
+  "github.com/MarconiProtocol/kyber"
+  mlog "github.com/MarconiProtocol/log"
 )
 
 type DHKeyInfo struct {

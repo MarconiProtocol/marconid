@@ -3,7 +3,7 @@ package mnet_if
 import (
   "../vars"
   "fmt"
-  "gitlab.neji.vm.tc/marconi/log"
+  mlog "github.com/MarconiProtocol/log"
   "os"
   "strings"
   "syscall"

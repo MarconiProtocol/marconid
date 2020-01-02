@@ -3,26 +3,18 @@
 package mblockchain
 
 import (
+  "../rpc"
   "./interface"
   "./vars"
+  mlog "github.com/MarconiProtocol/log"
   "sync"
 )
 
-/*
-  Blockchain data source interface
-*/
-type BlockchainDataSource interface {
-  Init()
-  GetPeerUpdates() chan mblockchain_vars.PeerUpdate
-  GetEdgePeerUpdates() chan mblockchain_vars.EdgePeerUpdate
-}
-
 type BlockchainManager struct {
-  networkId int
-  nodeMap   map[string]mblockchain_vars.NodeInfo // a map of nodes where key is the node id in format of #n where n is a number, value is NodeInfo containing information such as ID and IP of the node
-  meshMap   map[string][]string                  // a map of node and their respective peers, key is the node id, and value is a list of node ids that the node is connected to
-
-  dataSource BlockchainDataSource
+  networkId  int
+  nodeMap    map[string]mblockchain_vars.NodeInfo // a map of nodes where key is the node id in format of #n where n is a number, value is NodeInfo containing information such as ID and IP of the node
+  meshMap    map[string][]string                  // a map of node and their respective peers, key is the node id, and value is a list of node ids that the node is connected to
+  dataSource *mblockchain_interface.BlockchainRPC
 }
 
 var blockchainManager *BlockchainManager
@@ -42,8 +34,12 @@ func GetBlockchainManager() *BlockchainManager {
   The datasource created depends on configuration
 */
 func (blockchainManager *BlockchainManager) init() {
-  blockchainManager.dataSource = &mblockchain_interface.BlockchainRPC{}
+  blockchainRPC := new(mblockchain_interface.BlockchainRPC)
+  blockchainManager.dataSource = blockchainRPC
   blockchainManager.dataSource.Init()
+  if err := rpc.RegisterService(blockchainRPC, ""); err != nil {
+    mlog.GetLogger().Error("Failed to register RPC service for BlockchainManager, err =", err)
+  }
 }
 
 /*

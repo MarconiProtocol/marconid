@@ -7,7 +7,8 @@ import (
   "../transport/udp"
   "errors"
   "fmt"
-  "gitlab.neji.vm.tc/marconi/log"
+  mlog "github.com/MarconiProtocol/log"
+  "strconv"
   "sync"
 )
 
@@ -15,6 +16,7 @@ type NetworkType int
 
 const (
   SERVICE_NET NetworkType = iota
+  EDGE_NET
 )
 
 type NetCoreManager struct {
@@ -70,13 +72,23 @@ func (nm *NetCoreManager) CreateMPipe(args *mnet_vars.ConnectionArgs) error {
     (*nm.pipeStates.StateMap)[args.LocalPort] = ATTEMPTING
   }
   nm.pipeStates.Unlock()
-
   status := SUCCESS
+
   // Create a tap connection and attach it to the bridge with netType SERVICE_NET and netId 'main'
-  _, err := nm.CreateTapConnection(SERVICE_NET, "main", mnet_core_udp.GetUDPTransport(), args)
+  conn, err := nm.CreateTapConnection(mnet_core_udp.GetUDPTransport(), args)
   if err != nil {
     status = UNATTEMPTED
     return errors.New(fmt.Sprintf("Failed to create tap connection: %s", err))
+  }
+
+  // Add the connection to the bridge
+  bridgeInfo, err := nm.GetBridgeInfoForNetwork(SERVICE_NET, "main")
+  if err != nil {
+    return errors.New(fmt.Sprintf("Failed to get bridge info: %s", err))
+  }
+  err = nm.AddConnectionToBridge(bridgeInfo, strconv.Itoa(int(conn.ID)), args.RemoteIpAddr)
+  if err != nil {
+    return errors.New(fmt.Sprintf("Failed to add connection to bridge: %s", err))
   }
 
   // If we are at this point we have started the transmit and listen goroutines via MPipe() and we can claim we have finished our attempt at creating a pipe

@@ -2,9 +2,9 @@ package mnet_core_udp
 
 import (
   "../../../../../core"
+  "../../../../../util"
   "../../../../config"
   "../../../../runtime"
-  "../../../../../util"
   "../../../if"
   "../../../packet/filter"
   "../../../vars"
@@ -14,15 +14,13 @@ import (
   "encoding/hex"
   "errors"
   "fmt"
+  "github.com/MarconiProtocol/gopacket"
+  "github.com/MarconiProtocol/gopacket/layers"
+  m_packet_filter "github.com/MarconiProtocol/sdk/packet/filter"
   "net"
   "strings"
   "sync"
   "time"
-
-  "github.com/google/gopacket"
-  "github.com/google/gopacket/layers"
-
-  "git.marconi.org/marconiprotocol/sdk/packet/filter"
 )
 
 type UDPTransport struct{}
@@ -81,10 +79,6 @@ func (udpt *UDPTransport) ListenAndTransmit(
   return physConn, nil
 }
 
-
-
-
-
 //To forward data from physical interface to tap/tun/virtual link interface
 func (udpt *UDPTransport) Listen(physConn *net.UDPConn, tapConn *mnet_if.Interface, peerAddr *net.UDPAddr, key []byte,
   dataKey *[]byte, isSecure bool, peerDiscoveryChannel chan net.UDPAddr, isTun bool, signalChannel chan string) {
@@ -136,10 +130,7 @@ func (udpt *UDPTransport) Listen(physConn *net.UDPConn, tapConn *mnet_if.Interfa
 
       mnet_core_base.Log.Debug("<- udp  | Encapsulated frame:")
       mnet_core_base.Log.Debugf("        | from Peer %s:%d", raddr.IP, raddr.Port)
-      packetDump := strings.Split(hex.Dump(packet[0:n]), "\n")
-      for i := 0; i < len(packetDump)-1; i++ {
-        mnet_core_base.Log.Debug(packetDump[i])
-      }
+      mnet_core_base.Log.Debugf("%s", hex.Dump(packet[0:n]))
 
       /* Decapsulate the frame, skip it if it's invalid */
       decapsulatedFrames, invalid = mnet_core_base.DecodeFrame(packet[0:n], hmacH)
@@ -182,7 +173,7 @@ func (udpt *UDPTransport) Listen(physConn *net.UDPConn, tapConn *mnet_if.Interfa
       mnet_core_base.Log.Debug("decoded frame:", decapsulatedFramesDecoded, len(decapsulatedFramesDecoded))
 
       // only ask filterManager to process packets if packet filtering is enabled
-      if mconfig.GetAppConfig().Global.PacketFiltersEnabled {
+      if mconfig.GetAppConfig().Global.Packet_Filters_Enabled {
         // Marshall bytes into gopacket
         ethPacket := gopacket.NewPacket(decapsulatedFramesDecoded, layers.LayerTypeEthernet, gopacket.Default)
 
@@ -205,7 +196,7 @@ func (udpt *UDPTransport) Listen(physConn *net.UDPConn, tapConn *mnet_if.Interfa
         //NOTE: darwin/osx does not need to go though clean up path since it requires ot have extra 4 bytes on header
         if mruntime.GetMRuntime().GetRuntimeOS() != mcore.TYPE_OS_DARWIN {
           //for now try slice and repack
-          adjustedFrame := decapsulatedFramesDecoded[4:]    // bsd link layer adjustment
+          adjustedFrame := decapsulatedFramesDecoded[4:] // bsd link layer adjustment
           decapsulatedFramesDecoded = make([]byte, len(adjustedFrame))
           decapsulatedFramesDecoded = adjustedFrame
         } else {
@@ -230,13 +221,6 @@ func (udpt *UDPTransport) Listen(physConn *net.UDPConn, tapConn *mnet_if.Interfa
     }
   }
 }
-
-
-
-
-
-
-
 
 //To forward data from tap/tun/virtual link interface to physical interface
 func (udpt *UDPTransport) Transmit(physConn *net.UDPConn, tapConn *mnet_if.Interface, peerAddr *net.UDPAddr, key []byte, dataKey *[]byte,
@@ -298,12 +282,8 @@ func (udpt *UDPTransport) Transmit(physConn *net.UDPConn, tapConn *mnet_if.Inter
       }
 
       mnet_core_base.Log.Debug("<- tap  | Plaintext frame to peer:")
-      frameDump := strings.Split(hex.Dump(frame[0:n]), "\n")
-      for i := 0; i < len(frameDump)-1; i++ {
-        mnet_core_base.Log.Debug(frameDump[i])
-      }
+      mnet_core_base.Log.Debugf("%s", hex.Dump(frame[0:n]))
       mnet_core_base.Log.Debug("raw frame: ", frame, len(frame))
-
       rawFrame := frame[:n]
       if isTun {
         // we do not need to inject with DARWIN/OSX system since system will add extra 4 bytes
@@ -341,11 +321,7 @@ func (udpt *UDPTransport) Transmit(physConn *net.UDPConn, tapConn *mnet_if.Inter
       }
 
       mnet_core_base.Log.Debug("-> udp  | Encapsulated frame to peer:", currentPeerAddr.IP.String())
-      encFrameDump := strings.Split(hex.Dump(encapsulatedFrames), "\n")
-      for i := 0; i < len(encFrameDump)-1; i++ {
-        mnet_core_base.Log.Debug(encFrameDump[i])
-      }
-
+      mnet_core_base.Log.Debug(hex.Dump(encapsulatedFrames))
       mnet_core_base.Log.Debug("encapsulated encrypted frame: ", encapsulatedFrames, len(encapsulatedFrames))
 
       physConn.SetDeadline(time.Now().Add(mnet_core_base.SOCKET_TIMEOUT_SECONDS * time.Second))

@@ -13,7 +13,7 @@ func TestGetBlockchainManager(t *testing.T) {
     name string
     want *BlockchainManager
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -29,7 +29,7 @@ func TestBlockchainManager_init(t *testing.T) {
     name              string
     blockchainManager *BlockchainManager
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -44,7 +44,7 @@ func TestBlockchainManager_GetPeerUpdates(t *testing.T) {
     blockchainManager *BlockchainManager
     want              chan mblockchain_vars.PeerUpdate
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -61,7 +61,7 @@ func TestBlockchainManager_GetEdgePeerUpdates(t *testing.T) {
     BlockchainManager *BlockchainManager
     want              chan mblockchain_vars.EdgePeerUpdate
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -82,7 +82,7 @@ func TestBlockchainManager_GetNode(t *testing.T) {
     args              args
     want              mblockchain_vars.NodeInfo
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -103,7 +103,7 @@ func TestBlockchainManager_GetMeshList(t *testing.T) {
     args              args
     want              []string
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {

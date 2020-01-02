@@ -4,7 +4,7 @@ import (
   "bytes"
   "crypto/sha256"
   "encoding/binary"
-  "gitlab.neji.vm.tc/marconi/log"
+  mlog "github.com/MarconiProtocol/log"
   "strings"
   "time"
 )

@@ -13,11 +13,11 @@ const (
 const EMPTY_CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 const (
-  DATA_KEY_SIZE = 32
-  HMAC_SHA256_SIZE = sha256.Size
-  TIMESTAMP_SIZE = 8
-  TIMESTAMP_DIFF_THRESHOLD int64 = 10.0 * 1e9   /* Acceptable timestamp difference threshold in nS (10.0 seconds) */
-  UDP_MTU = 1472
-  TAP_MTU = UDP_MTU - 14 - HMAC_SHA256_SIZE - TIMESTAMP_SIZE - DATA_KEY_SIZE
-  TUN_MTU = UDP_MTU - 20 - 20 - HMAC_SHA256_SIZE - TIMESTAMP_SIZE - DATA_KEY_SIZE
+  DATA_KEY_SIZE                  = 32
+  HMAC_SHA256_SIZE               = sha256.Size
+  TIMESTAMP_SIZE                 = 8
+  TIMESTAMP_DIFF_THRESHOLD int64 = 10.0 * 1e9 /* Acceptable timestamp difference threshold in nS (10.0 seconds) */
+  UDP_MTU                        = 1472
+  TAP_MTU                        = UDP_MTU - 14 - HMAC_SHA256_SIZE - TIMESTAMP_SIZE - DATA_KEY_SIZE
+  TUN_MTU                        = UDP_MTU - 20 - 20 - HMAC_SHA256_SIZE - TIMESTAMP_SIZE - DATA_KEY_SIZE
 )

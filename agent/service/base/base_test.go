@@ -14,7 +14,7 @@ func TestNewAgentClient(t *testing.T) {
     args args
     want *AgentClient
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -30,7 +30,7 @@ func TestAgentClient_Start(t *testing.T) {
     name  string
     agent *AgentClient
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -44,7 +44,7 @@ func TestAgentClient_idleForNetworkContractAddress(t *testing.T) {
     name  string
     agent *AgentClient
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -62,7 +62,7 @@ func TestAgentClient_idleForMiddlewareRegistration(t *testing.T) {
     agent *AgentClient
     args  args
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -76,7 +76,7 @@ func TestAgentClient_waitForTermSignal(t *testing.T) {
     name  string
     agent *AgentClient
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -94,32 +94,11 @@ func TestAgentClient_requestPeerResponseHandler(t *testing.T) {
     agent *AgentClient
     args  args
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
       tt.agent.requestPeerResponseHandler(tt.args.args)
-    })
-  }
-}
-
-func Test_getMutualMPipePort(t *testing.T) {
-  type args struct {
-    pubKeyHash     string
-    peerPubKeyHash string
-  }
-  tests := []struct {
-    name string
-    args args
-    want int
-  }{
-    // TODO: Add test cases.
-  }
-  for _, tt := range tests {
-    t.Run(tt.name, func(t *testing.T) {
-      if got := getMutualMPipePort(tt.args.pubKeyHash, tt.args.peerPubKeyHash); got != tt.want {
-        t.Errorf("getMutualMPipePort() = %v, want %v", got, tt.want)
-      }
     })
   }
 }

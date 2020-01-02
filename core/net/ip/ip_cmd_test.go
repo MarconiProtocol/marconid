@@ -11,7 +11,7 @@ func TestGetMainInterfaceIpAddress(t *testing.T) {
     want    string
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -33,7 +33,7 @@ func TestGetOwnGatewayIpAddress(t *testing.T) {
     want    string
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -63,7 +63,7 @@ func TestGetCommandSetForAddIpAddressTunInterface(t *testing.T) {
     want  string
     want1 map[int][]string
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {

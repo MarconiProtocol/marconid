@@ -1,20 +1,19 @@
 package mutil
 
 import (
-  "fmt"
-  "os"
-  "strconv"
-
   "crypto/rsa"
   "crypto/sha1"
   "crypto/x509"
   "encoding/base64"
   "encoding/hex"
   "encoding/pem"
-  "gitlab.neji.vm.tc/marconi/log"
+  "fmt"
+  mlog "github.com/MarconiProtocol/log"
   "io/ioutil"
+  "math/big"
+  "os"
+  "strconv"
 )
-
 
 func DoesExist(filePath string) bool {
   if _, err := os.Stat(filePath); err == nil {
@@ -84,7 +83,7 @@ func LoadKey(privateKeyPath string) *rsa.PrivateKey {
 ** equivalent such as 255.255.255.0
  */
 func Get32BitMaskFromCIDR(netmask int) string {
-  mask := (0xFFFFFFFF << (32 - uint(netmask))) & 0xFFFFFFFF
+  mask := (0xFFFFFFFF << (32 - uint(netmask))) & uint(0xFFFFFFFF)
   var dmask uint64
   dmask = 32
   localmask := ""
@@ -92,11 +91,41 @@ func Get32BitMaskFromCIDR(netmask int) string {
     tmp := mask >> (dmask - 8) & 0xFF
 
     if i == 1 {
-      localmask += strconv.Itoa(tmp)
+      localmask += strconv.FormatUint(uint64(tmp), 10)
     } else {
-      localmask += "." + strconv.Itoa(tmp)
+      localmask += "." + strconv.FormatUint(uint64(tmp), 10)
     }
     dmask -= 8
   }
   return localmask
+}
+
+/*
+  Return an integer that is deterministically calculated from two pubkeyhashes
+  The resulting integer is used as the mpipe port between the two pubkeyhash owners as a form of psuedo port negotiation
+*/
+func GetMutualMPipePort(pubKeyHash string, peerPubKeyHash string) int {
+  // choose a big enough prime number to use as the number of buckets
+  bucketSize := big.NewInt(7919)
+  // the base port is added to the result of the modulus to get the final port
+  var basePort = 40000
+
+  // concatenate the pubkeyhash strings based on a simple sorting order
+  var concatPubKeyHash string
+  if pubKeyHash >= peerPubKeyHash {
+    concatPubKeyHash = pubKeyHash + peerPubKeyHash
+  } else {
+    concatPubKeyHash = peerPubKeyHash + pubKeyHash
+  }
+
+  // grab the bytes for the concatenated pubkey hashes and use the bytes to create a big int
+  concatPubKeyHashBytes := []byte(concatPubKeyHash)
+  num := &big.Int{}
+  num.SetBytes(concatPubKeyHashBytes)
+  // get the modulus of this big int number based on the prime bucket size
+  res := &big.Int{}
+  res.Mod(num, bucketSize)
+
+  // The resulting port is the modulus added to the base port number
+  return basePort + int(res.Int64())
 }

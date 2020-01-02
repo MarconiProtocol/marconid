@@ -12,7 +12,7 @@ func TestGetBeaconManager(t *testing.T) {
     name string
     want *BeaconManager
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -39,7 +39,7 @@ func TestBeaconManager_CreateBaseRouteBeacon(t *testing.T) {
     name   string
     fields fields
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -79,7 +79,7 @@ func TestBeaconManager_StartBaseRouteAnnouncement(t *testing.T) {
     fields fields
     args   args
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -115,7 +115,7 @@ func TestBeaconManager_StopBaseRouteAnnouncement(t *testing.T) {
     name   string
     fields fields
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -155,7 +155,7 @@ func TestBeaconManager_CreatePeerRouteBeacon(t *testing.T) {
     fields fields
     args   args
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -191,7 +191,7 @@ func TestBeaconManager_StartPeerRouteAnnouncement(t *testing.T) {
     name   string
     fields fields
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -227,7 +227,7 @@ func TestBeaconManager_StopPeerRouteAnnouncement(t *testing.T) {
     name   string
     fields fields
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -267,7 +267,7 @@ func TestBeaconManager_StartPeerRouteRequest(t *testing.T) {
     fields fields
     args   args
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -307,7 +307,7 @@ func TestBeaconManager_StopPeerRouteRequest(t *testing.T) {
     fields fields
     args   args
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -348,7 +348,7 @@ func TestBeaconManager_isPeerRouteRequestStarted(t *testing.T) {
     args   args
     want   bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {

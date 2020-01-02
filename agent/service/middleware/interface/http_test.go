@@ -11,7 +11,7 @@ func TestSubscribeParams_GetParamsJsonString(t *testing.T) {
     r    SubscribeParams
     want string
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -28,7 +28,7 @@ func TestUnsubscribeParams_GetParamsJsonString(t *testing.T) {
     r    UnsubscribeParams
     want string
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -49,7 +49,7 @@ func Test_createJsonPayload(t *testing.T) {
     args args
     want []byte
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -69,7 +69,7 @@ func TestRegisterForPeerUpdates(t *testing.T) {
     args    args
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -85,7 +85,7 @@ func TestUnregisterForPeerUpdates(t *testing.T) {
     name    string
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -108,7 +108,7 @@ func Test_sendJsonRpcOverHttp(t *testing.T) {
     args    args
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {

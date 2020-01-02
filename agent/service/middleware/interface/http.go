@@ -5,7 +5,7 @@ import (
   "../../../../core/rpc"
   "bytes"
   "encoding/json"
-  "gitlab.neji.vm.tc/marconi/log"
+  mlog "github.com/MarconiProtocol/log"
   "io/ioutil"
   "net/http"
 )
@@ -62,7 +62,7 @@ func createJsonPayload(method string, params string) []byte {
 */
 func RegisterForPeerUpdates(pubKeyHash string) error {
   // TODO: ayuen, we need to read / get  the network cluster key from somewhere
-  networkContractAddress := mconfig.GetUserConfig().Blockchain.NetworkContractAddress
+  networkContractAddress := mconfig.GetUserConfig().Blockchain.Network_Contract_Address
   path := "api/middleware/v1"
 
   subscribeParams := SubscribeParams{

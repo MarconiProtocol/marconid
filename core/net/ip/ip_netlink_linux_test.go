@@ -1,11 +1,10 @@
 package mnet_ip
 
 import (
+  "github.com/MarconiProtocol/netlink"
   "net"
   "reflect"
   "testing"
-
-  "gitlab.neji.vm.tc/marconi/netlink"
 )
 
 func Test_getNetlinkAddress(t *testing.T) {
@@ -18,7 +17,7 @@ func Test_getNetlinkAddress(t *testing.T) {
     args args
     want *netlink.Addr
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -38,7 +37,7 @@ func Test_getNetlinkLink(t *testing.T) {
     args args
     want netlink.Link
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -54,7 +53,7 @@ func Test_getAllLinksByNetlink(t *testing.T) {
     name string
     want []netlink.Link
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -75,7 +74,7 @@ func Test_getIPNetAddress(t *testing.T) {
     args args
     want *net.IPNet
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -95,7 +94,7 @@ func Test_getNetIPv4(t *testing.T) {
     args args
     want net.IP
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -116,7 +115,7 @@ func TestAssignNetlinkIpAddress(t *testing.T) {
     name string
     args args
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -135,7 +134,7 @@ func TestRemoveNetlinkIpAddress(t *testing.T) {
     name string
     args args
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -154,7 +153,7 @@ func TestGetNetlinkAllIpAddress(t *testing.T) {
     args args
     want []netlink.Addr
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -174,7 +173,7 @@ func TestGetIpAddressV4ByNetlink(t *testing.T) {
     args args
     want []netlink.Addr
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -194,7 +193,7 @@ func TestGetIpAddressV6ByNetlink(t *testing.T) {
     args args
     want []netlink.Addr
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -214,7 +213,7 @@ func TestListNetlinkAllIpAddress(t *testing.T) {
     name string
     args args
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -227,7 +226,7 @@ func TestListAllLinksByNetlink(t *testing.T) {
   tests := []struct {
     name string
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {

@@ -1,17 +1,20 @@
 package mnet_core_manager
 
 import (
-  "../../../config"
   "../../../../util"
+  "../../../config"
   "../../ip"
   "../../vars"
   "../base"
   "errors"
   "fmt"
-  "gitlab.neji.vm.tc/marconi/log"
-  "gitlab.neji.vm.tc/marconi/netlink"
+  mlog "github.com/MarconiProtocol/log"
+  "github.com/MarconiProtocol/netlink"
+  "os"
   "strconv"
 )
+
+const FILE_PATH_BRIDGE_AGEING_TIME = "/sys/class/net/mb42/bridge/ageing_time"
 
 /*
 	Get an already allocated bridge settings, or allocate a new one and return it
@@ -19,7 +22,7 @@ import (
 func (nm *NetCoreManager) GetOrAllocateBridgeInfoForNetwork(netType NetworkType, netId string) (*BridgeInfo, bool, error) {
   nm.Lock()
   defer nm.Unlock()
-  var newlyAllocated bool
+  var newlyAllocated bool = false
 
   switch netType {
   case SERVICE_NET:
@@ -27,6 +30,19 @@ func (nm *NetCoreManager) GetOrAllocateBridgeInfoForNetwork(netType NetworkType,
       bridgeIdInt, err := nm.allocateNextServiceBridgeId()
       if err != nil {
         return nil, false, errors.New(fmt.Sprintf("Could not create a bridge Id for network: %s of type SERVICE_NET", netId))
+      }
+      newlyAllocated = true
+      nm.netIDtoBridgeInfoMap[netId] = &BridgeInfo{
+        ID: strconv.Itoa(int(bridgeIdInt)),
+        IP: "",
+      }
+    }
+    return nm.netIDtoBridgeInfoMap[netId], newlyAllocated, nil
+  case EDGE_NET:
+    if _, exists := nm.netIDtoBridgeInfoMap[netId]; !exists {
+      bridgeIdInt, err := nm.allocateNextEdgeBridgeId()
+      if err != nil {
+        return nil, false, errors.New(fmt.Sprintf("Could not create a bridge Id for network: %s of type EDGE_NET", netId))
       }
       newlyAllocated = true
       nm.netIDtoBridgeInfoMap[netId] = &BridgeInfo{
@@ -49,6 +65,11 @@ func (nm *NetCoreManager) GetBridgeInfoForNetwork(netType NetworkType, netId str
 
   switch netType {
   case SERVICE_NET:
+    if _, exists := nm.netIDtoBridgeInfoMap[netId]; !exists {
+      return nil, errors.New(fmt.Sprintf("Bridge info does not exist for network of type: %d, and id: %s", netType, netId))
+    }
+    return nm.netIDtoBridgeInfoMap[netId], nil
+  case EDGE_NET:
     if _, exists := nm.netIDtoBridgeInfoMap[netId]; !exists {
       return nil, errors.New(fmt.Sprintf("Bridge info does not exist for network of type: %d, and id: %s", netType, netId))
     }
@@ -87,8 +108,22 @@ func (nm *NetCoreManager) CreateBridge(bridgeInfo *BridgeInfo, ipAddr string, ne
       }
     }
 
+    // update the file for bridge ageing time according to what's specified in config.yml
+    // this impacts the mPipe fail-over delay
+    file, err := os.OpenFile(FILE_PATH_BRIDGE_AGEING_TIME, os.O_RDWR, 0644)
+    if err != nil {
+      mlog.GetLogger().Error("failed opening file for ageing time", err)
+    } else {
+      ageingTime := strconv.Itoa(mconfig.GetAppConfig().Global.BRIDGE_AGEING_TIME_SECONDS * 1000)
+      _, err = file.WriteString(ageingTime)
+      if err != nil {
+        mlog.GetLogger().Error("failed to update file for ageing time", err)
+      }
+    }
+    file.Close()
+
     // enable vlan filter
-    if mconfig.GetAppConfig().Global.VlanFilterEnabled {
+    if mconfig.GetAppConfig().Global.Vlan_Filter_Enabled {
       mnet_core_base.EnableVlanFiltering(bridgeName)
     }
   }
@@ -102,7 +137,6 @@ func (nm *NetCoreManager) CreateBridge(bridgeInfo *BridgeInfo, ipAddr string, ne
   } else {
     mlog.GetLogger().Debug(fmt.Sprintf("Successfully brought up the bridge with id %s, res: %s", bridgeInfo.ID, res))
   }
-
 }
 
 /*
@@ -143,7 +177,7 @@ func (nm *NetCoreManager) AddConnectionToBridge(bridgeInfo *BridgeInfo, taptunID
 
   // add vlan tag to the pipe
   vid := 2 // TODO get vlan ID from middleware
-  if mconfig.GetAppConfig().Global.VlanFilterEnabled {
+  if mconfig.GetAppConfig().Global.Vlan_Filter_Enabled {
     mnet_core_base.AddVlanFilter(pipeName, uint16(vid), true, true, false, true)
   }
   if peerIpAddr != "" {
@@ -191,10 +225,24 @@ func (nm *NetCoreManager) AssignIpAddrToBridge(bridgeInfo *BridgeInfo, ipAddr st
     }
   }()
 
-  // an interface could be associated with a list of IPs, so we first remove all other IPs from the list.
-  for _, address := range mnet_ip.GetNetlinkAllIpAddress(ifName, mnet_ip.FAMILY_ALL) {
-    mnet_ip.RemoveNetlinkIpAddress(ifName, address.IP.String(), netmask)
+  // Assumption 0th index Addr is the primary addr
+  addrs := mnet_ip.GetNetlinkAllIpAddress(ifName, mnet_ip.FAMILY_ALL)
+  if len(addrs) > 0 {
+    mlog.GetLogger().Debug(fmt.Sprintf("Trying to assign addrs[0] %s ", addrs[0].String()))
+    // If the current primary addr is not the same as the one we are assigned, then we need to assign it.
+    if ones, _ := addrs[0].IPNet.Mask.Size(); addrs[0].IPNet.IP.String() != ipAddr && ones != netmask {
+      // an interface could be associated with a list of IPs, so we first remove all other IPs from the list.
+      for _, address := range mnet_ip.GetNetlinkAllIpAddress(ifName, mnet_ip.FAMILY_ALL) {
+        mnet_ip.RemoveNetlinkIpAddress(ifName, address.IP.String(), netmask)
+      }
+      mlog.GetLogger().Info(fmt.Sprintf("Overriding with ipAddr: %s, netmask: %d", ipAddr, netmask))
+      // assign the new IP to the interface
+      mnet_ip.AssignNetlinkIpAddress(ifName, ipAddr, netmask)
+    }
+  } else {
+    mlog.GetLogger().Info(fmt.Sprintf("Assigning for the first time ipAddr: %s, netmask: %d", ipAddr, netmask))
+    // assign the new IP to the interface
+    mnet_ip.AssignNetlinkIpAddress(ifName, ipAddr, netmask)
   }
-  // assign the new IP to the interface
-  mnet_ip.AssignNetlinkIpAddress(ifName, ipAddr, netmask)
+
 }

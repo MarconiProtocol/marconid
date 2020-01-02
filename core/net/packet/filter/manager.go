@@ -1,12 +1,12 @@
 package mpacket_filter
 
 import (
-  "../../../config"
   "../../../../util"
+  "../../../config"
   "fmt"
-  "git.marconi.org/marconiprotocol/sdk/packet/filter"
-  "github.com/google/gopacket"
-  "gitlab.neji.vm.tc/marconi/log"
+  "github.com/MarconiProtocol/gopacket"
+  mlog "github.com/MarconiProtocol/log"
+  m_packet_filter "github.com/MarconiProtocol/sdk/packet/filter"
   "io/ioutil"
   "path/filepath"
   "plugin"
@@ -61,10 +61,10 @@ func (filterManager *PacketFilterManager) init() {
   reads the directory and caches a map of potential filter plugins to load
 */
 func (filterManager *PacketFilterManager) loadConfig() {
-  files, err := ioutil.ReadDir(mconfig.GetAppConfig().Global.PacketFilterDataDirectoryPath)
+  files, err := ioutil.ReadDir(mconfig.GetAppConfig().Global.Packet_Filter_Data_Directory_Path)
   if err != nil {
     mlog.GetLogger().Error(fmt.Sprintf("packetFilterManager::loadConfig - cannot read packet filter directory %v", err))
-    mlog.GetLogger().Error("packetFilterManager::loadConfig - ", mconfig.GetAppConfig().Global.PacketFilterDataDirectoryPath)
+    mlog.GetLogger().Error("packetFilterManager::loadConfig - ", mconfig.GetAppConfig().Global.Packet_Filter_Data_Directory_Path)
   } else {
     for _, file := range files {
       if !file.IsDir() {
@@ -81,7 +81,7 @@ func (filterManager *PacketFilterManager) loadFilter() {
   mlog.GetLogger().Debug("packetFilterManager::load")
   for filterName, soFilePath := range filterManager.availableFilters {
 
-    filterPath := filepath.Join(mconfig.GetAppConfig().Global.PacketFilterDataDirectoryPath, soFilePath)
+    filterPath := filepath.Join(mconfig.GetAppConfig().Global.Packet_Filter_Data_Directory_Path, soFilePath)
     mlog.GetLogger().Debug(fmt.Sprintf("packetFilterManager::load - loading %s at %s", filterName, filterPath))
 
     if mutil.DoesExist(filterPath) {

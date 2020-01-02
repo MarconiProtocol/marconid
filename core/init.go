@@ -2,12 +2,12 @@ package mcore
 
 import (
   "./config"
-  "gitlab.neji.vm.tc/marconi/log"
+  mlog "github.com/MarconiProtocol/log"
 )
 
-func Initialize() {
+func Initialize(baseDir string) {
   // initialize configuration
-  mconfig.InitializeConfigs()
+  mconfig.InitializeConfigs(baseDir)
   // initialize logger
   mlog.Init(mconfig.GetAppConfig().Log.Dir, mconfig.GetAppConfig().Log.Level)
 }

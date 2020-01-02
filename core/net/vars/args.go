@@ -3,7 +3,7 @@ package mnet_vars
 import (
   "bytes"
   "fmt"
-  "gitlab.neji.vm.tc/marconi/log"
+  mlog "github.com/MarconiProtocol/log"
 )
 
 type ConnectionArgs struct {

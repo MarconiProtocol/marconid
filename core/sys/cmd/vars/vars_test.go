@@ -10,7 +10,7 @@ func TestNewSafeWriter(t *testing.T) {
     name string
     want *SafeWriter
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -32,7 +32,7 @@ func TestSafeWriter_Write(t *testing.T) {
     want    int
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -54,7 +54,7 @@ func TestSafeWriter_GetBytes(t *testing.T) {
     sw   *SafeWriter
     want []byte
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {

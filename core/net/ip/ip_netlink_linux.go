@@ -2,8 +2,8 @@ package mnet_ip
 
 import (
   "fmt"
-  "gitlab.neji.vm.tc/marconi/log"
-  "gitlab.neji.vm.tc/marconi/netlink"
+  mlog "github.com/MarconiProtocol/log"
+  "github.com/MarconiProtocol/netlink"
   "golang.org/x/sys/unix"
   "net"
   "strconv"

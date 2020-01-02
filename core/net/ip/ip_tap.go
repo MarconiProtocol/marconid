@@ -1,16 +1,16 @@
 package mnet_ip
 
 import (
-  "../vars"
   "../../sys/cmd"
+  "../vars"
   "errors"
   "fmt"
-  "gitlab.neji.vm.tc/marconi/log"
+  mlog "github.com/MarconiProtocol/log"
 )
 
 /*
   Assign an ip address to a bridge network interface
- */
+*/
 func ConfigBridgeIpAddrByCommand(bridgeID string, ipAddr string, netmask string) (string, error) {
   cmdSuite, err := msys_cmd.GetSuite()
   if err != nil {
@@ -26,7 +26,7 @@ func ConfigBridgeIpAddrByCommand(bridgeID string, ipAddr string, netmask string)
 
 /*
   "Up" the bridge interface
- */
+*/
 func ConfigBridgeUpByCommand(bridgeID string) (string, error) {
   cmdSuite, err := msys_cmd.GetSuite()
   if err != nil {
@@ -43,7 +43,7 @@ func ConfigBridgeUpByCommand(bridgeID string) (string, error) {
 
 /*
   Add a network interface to a bridge interface
- */
+*/
 func ConfigTapToBridgeByCommand(bridgeID string, tapID string) (string, error) {
   cmdSuite, err := msys_cmd.GetSuite()
   if err != nil {
@@ -58,10 +58,26 @@ func ConfigTapToBridgeByCommand(bridgeID string, tapID string) (string, error) {
   return res, nil
 }
 
+/*
+  Add a softflowd daemon to a bridge interface
+*/
+func NetflowMonitorBridge(bridgeID string, collectorIp string, collectorPort string, netflowDirectory string) error {
+  cmdSuite, err := msys_cmd.GetSuite()
+  if err != nil {
+    return errors.New(fmt.Sprintf("Failed to get cmd suite: %s", err))
+  }
+  mlog.GetLogger().Infof("Started netflow monitoring on interface %s", bridgeID)
+  bridgeInterfaceName := bridgeID
+  err = cmdSuite.AddNetflowMonitorToBridge(bridgeID, collectorIp, collectorPort, netflowDirectory)
+  if err != nil {
+    return errors.New(fmt.Sprintf("Failed to add netflow monitor to bridge interface [%s] using cmdSuite: %s", bridgeInterfaceName, err.Error()))
+  }
+  return nil
+}
 
 /*
   Create and configure a bridge
- */
+*/
 func ConfigBridgeByCommand(bridgeID string, ipAddr string, netmask string, resetBridge bool) (string, error) {
   cmdSuite, err := msys_cmd.GetSuite()
   if err != nil {

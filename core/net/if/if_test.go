@@ -17,7 +17,7 @@ func TestInterface_OpenTun(t *testing.T) {
     args    args
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -39,7 +39,7 @@ func TestInterface_OpenTap(t *testing.T) {
     args    args
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -61,7 +61,7 @@ func TestInterface_OpenTunInterface(t *testing.T) {
     args    args
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -83,7 +83,7 @@ func TestInterface_OpenTapInterface(t *testing.T) {
     args    args
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -104,7 +104,7 @@ func TestNewTAP(t *testing.T) {
     wantIfce *Interface
     wantErr  bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -130,7 +130,7 @@ func TestNewTUN(t *testing.T) {
     wantIfce *Interface
     wantErr  bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -152,7 +152,7 @@ func TestInterface_IsTUN(t *testing.T) {
     ifce *Interface
     want bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -169,7 +169,7 @@ func TestInterface_IsTAP(t *testing.T) {
     ifce *Interface
     want bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -186,7 +186,7 @@ func TestInterface_GetName(t *testing.T) {
     ifce *Interface
     want string
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -203,7 +203,7 @@ func TestInterface_GetFdOS(t *testing.T) {
     ifce *Interface
     want *os.File
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -220,7 +220,7 @@ func TestInterface_GetFd(t *testing.T) {
     ifce *Interface
     want int
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -240,7 +240,7 @@ func TestInterface_SetTap(t *testing.T) {
     ifce *Interface
     args args
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -255,7 +255,7 @@ func TestInterface_Name(t *testing.T) {
     ifce *Interface
     want string
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -276,7 +276,7 @@ func TestTunIdRandom(t *testing.T) {
     args args
     want int
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {

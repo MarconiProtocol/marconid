@@ -1,26 +1,34 @@
 package mnet_dht
 
 import (
+  "../../../util"
   "../../config"
   "crypto/rsa"
-  "gitlab.neji.vm.tc/marconi/log"
+  "github.com/MarconiProtocol/log"
   "sync"
 )
 
 type BeaconManager struct {
   baseBeaconMutex  sync.Mutex
   peerBeaconMutex  sync.Mutex
+  edgeBeaconMutex  sync.Mutex
   peerRequestMutex sync.Mutex
 
   baseBeaconDHT    *MDHT
   baseBeaconSignal *chan bool
 
-  peerBeaconDHT    *MDHT
-  peerBeaconSignal *chan bool
+  edgeBeaconDHT      *MDHT
+  edgeBeaconSignal   *chan bool
+  edgeRequestStarted bool
+  edgeRequestSignal  *chan bool
 
+  peerBeaconDHT      *MDHT
+  peerBeaconSignal   *chan bool
   peerRequestStarted *map[string]bool
   peerRequestSignals *map[string]*chan bool // pubkeyhash -> kill channel for peer request goroutines
 }
+
+const BEACON_INTERVAL = 5
 
 var beaconManager *BeaconManager
 var once sync.Once
@@ -33,12 +41,15 @@ func GetBeaconManager() *BeaconManager {
     baseSignal := make(chan bool)
     beaconManager.baseBeaconSignal = &baseSignal
 
+    edgeSignal := make(chan bool)
+    beaconManager.edgeBeaconSignal = &edgeSignal
+    edgeRequestSignal := make(chan bool)
+    beaconManager.edgeRequestSignal = &edgeRequestSignal
+
     peerSignal := make(chan bool)
     beaconManager.peerBeaconSignal = &peerSignal
-
     peerRequestSignals := make(map[string]*chan bool)
     beaconManager.peerRequestSignals = &peerRequestSignals
-
     peerRequestStarted := make(map[string]bool)
     beaconManager.peerRequestStarted = &peerRequestStarted
   })
@@ -55,7 +66,7 @@ func (bm *BeaconManager) CreateBaseRouteBeacon() {
     return
   }
 
-  mlog.GetLogger().Debug("BeaconManager::StartBaseRouteBeacon - Starting PeerRouteBeacon")
+  mlog.GetLogger().Debug("BeaconManager::StartBaseRouteBeacon - Starting BaseRouteBeacon")
   conf := &Config{
     DHTPort:   24801,
     SeedNodes: mconfig.GetAppConfig().DHT.BootNodes,
@@ -77,7 +88,7 @@ func (bm *BeaconManager) StartBaseRouteAnnouncement(baseRouteBeaconKey *rsa.Publ
   }
 
   // TODO probably need to lock the read/write for this
-  go bm.baseBeaconDHT.AnnouncementBeacon(bm.baseBeaconSignal, baseRouteBeaconKey, 120, mconfig.GetAppConfig().DHT.AnnounceSelfIntervalSeconds)
+  go bm.baseBeaconDHT.AnnouncementBeacon(bm.baseBeaconSignal, baseRouteBeaconKey, 120, mconfig.GetAppConfig().DHT.Announce_Base_Interval_Seconds)
 }
 
 /*
@@ -89,6 +100,80 @@ func (bm *BeaconManager) StopBaseRouteAnnouncement() {
     return
   }
   *bm.baseBeaconSignal <- true
+}
+
+// ===== Edge Route Beacon =====
+/*
+  Creates a new beacon for edge route announcement and requests.
+*/
+func (bm *BeaconManager) CreateEdgeRouteBeacon(actionFunc func(map[string]string)) {
+  if bm.edgeBeaconDHT != nil {
+    mlog.GetLogger().Debug("BeaconManager::StartEdgeRouteBeacon - Tried to start another edge route beacon while one is active, no-op")
+    return
+  }
+
+  mlog.GetLogger().Debug("BeaconManager::StartEdgeRouteBeacon - Starting EdgeRouteBeacon")
+  conf := &Config{
+    DHTPort:   24803,
+    SeedNodes: mconfig.GetAppConfig().DHT.BootNodes,
+  }
+
+  var err error
+  if bm.edgeBeaconDHT, err = NewMDHT(conf); err != nil {
+    mlog.GetLogger().Fatal("BeaconManager::StartEdgeRouteBeacon - Error: Failed to start dht instance for edge route beacon", err)
+  }
+
+  bm.edgeBeaconDHT.PeerRouteActionHandlerMapping[EDGE_REQUEST_RESPONSE] = actionFunc
+  go bm.edgeBeaconDHT.handleEdgeRequestResponses()
+}
+
+/*
+  Announce on the edge route beacon that this node is a part of the edge route
+*/
+func (bm *BeaconManager) StartEdgeRouteAnnouncement(edgeRouteBeaconKey *rsa.PublicKey) {
+  if bm.edgeBeaconDHT == nil {
+    mlog.GetLogger().Debug("BeaconManager::StartEdgeRouteAnnouncement - Tried to start edge route announcement when no beacon was created")
+    return
+  }
+  go bm.edgeBeaconDHT.AnnouncementBeacon(bm.edgeBeaconSignal, edgeRouteBeaconKey, 0, mconfig.GetAppConfig().DHT.Announce_Base_Interval_Seconds)
+}
+
+/*
+  Start requesting for responses from peers on the base route
+*/
+func (bm *BeaconManager) StartEdgeRouteRequest(baseRouteBeaconKey *rsa.PublicKey) {
+  if bm.isEdgeRouteRequestStarted() {
+    mlog.GetLogger().Debug("StartBaseRouteRequest is already started, no-op")
+    return
+  }
+
+  baseRoutePubKeyHash, err := mutil.GetInfohashByPubKey(baseRouteBeaconKey)
+  if err != nil {
+    mlog.GetLogger().Fatal("BeaconManager::StartBaseRouteRequest - Failed to get pkh of base route key")
+  }
+  bm.edgeRequestStarted = true
+
+  go bm.edgeBeaconDHT.RequestBeacon(bm.edgeRequestSignal, baseRoutePubKeyHash, "", []string{}, BEACON_INTERVAL)
+}
+
+/*
+  Stop requesting for responses from peers on the base route
+*/
+func (bm *BeaconManager) StopEdgeRouteRequest() {
+  if !bm.isEdgeRouteRequestStarted() {
+    mlog.GetLogger().Debug("BaseRouteRequest is not started, no-op")
+    return
+  }
+
+  bm.edgeRequestStarted = false
+  *bm.edgeRequestSignal <- true
+}
+
+/*
+  Check if the edge route request has been started
+*/
+func (bm *BeaconManager) isEdgeRouteRequestStarted() bool {
+  return bm.edgeRequestStarted
 }
 
 // ===== Peer Route Beacon =====
@@ -111,12 +196,12 @@ func (bm *BeaconManager) CreatePeerRouteBeacon(actionFunc func(map[string]string
     mlog.GetLogger().Fatal("BeaconManager - Error: Failed to start dht instance for peer route beacon", err)
   }
   // Set up the callback for when a PeerRouteRequest has a response
-  bm.peerBeaconDHT.PeerRouteActionList[PEER_REQUEST_RESPONSE] = actionFunc
+  bm.peerBeaconDHT.PeerRouteActionHandlerMapping[PEER_REQUEST_RESPONSE] = actionFunc
   go bm.peerBeaconDHT.handlePeerRequestResponses()
 }
 
 /*
-  Start announcing this node's PKH on the peer route
+  Start announcing this node's PubKeyHash on the peer route
 */
 func (bm *BeaconManager) StartPeerRouteAnnouncement() {
   if bm.baseBeaconDHT == nil {
@@ -124,8 +209,8 @@ func (bm *BeaconManager) StartPeerRouteAnnouncement() {
     return
   }
 
-  mlog.GetLogger().Debug("BeaconManager::StartPeerRouteAnnouncement - peerRouteKey: ")
-  go bm.peerBeaconDHT.SelfAnnouncementBeacon(bm.peerBeaconSignal, 0, 2)
+  mlog.GetLogger().Debug("BeaconManager::StartPeerRouteAnnouncement")
+  go bm.peerBeaconDHT.SelfAnnouncementBeacon(bm.peerBeaconSignal, 0, mconfig.GetAppConfig().DHT.Announce_Self_Interval_Seconds)
 }
 
 /*
@@ -152,7 +237,7 @@ func (bm *BeaconManager) StartPeerRouteRequest(peerPubKeyHash string) {
   bm.peerRequestMutex.Lock()
   (*bm.peerRequestStarted)[peerPubKeyHash] = true
   (*bm.peerRequestSignals)[peerPubKeyHash] = &signal
-  go bm.peerBeaconDHT.RequestBeacon(&signal, peerPubKeyHash, "", []string{}, 360000, 5)
+  go bm.peerBeaconDHT.RequestBeacon(&signal, peerPubKeyHash, "", []string{}, mconfig.GetAppConfig().DHT.Request_Peers_Interval_Seconds)
   bm.peerRequestMutex.Unlock()
 }
 

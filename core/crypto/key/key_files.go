@@ -4,7 +4,7 @@ import (
   "crypto/rsa"
   "crypto/x509"
   "encoding/pem"
-  "gitlab.neji.vm.tc/marconi/log"
+  mlog "github.com/MarconiProtocol/log"
   "io/ioutil"
   "os"
 )

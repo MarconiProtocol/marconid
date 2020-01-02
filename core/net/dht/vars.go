@@ -1,14 +1,15 @@
 package mnet_dht
 
 import (
-  dht_lib "gitlab.neji.vm.tc/marconi/dht"
-  "gitlab.neji.vm.tc/marconi/log"
+  dht_lib "github.com/MarconiProtocol/dht"
+  mlog "github.com/MarconiProtocol/log"
   "sync"
 )
 
 const PEER_REQUEST_RESPONSE = "peer_response"
+const EDGE_REQUEST_RESPONSE = "edge_response"
 
-type PeerChan (chan<- string)
+type PeerChan chan<- string
 
 type ChanSet struct {
   set map[PeerChan]bool
@@ -25,7 +26,7 @@ func (set *ChanSet) Remove(ch PeerChan) {
 
 type MDHT struct {
   DHT         *dht_lib.DHT
-  subscribers map[dht_lib.InfoHash](*ChanSet)
+  subscribers map[dht_lib.InfoHash]*ChanSet
   subMutex    *sync.Mutex
 
   //dynamic DHT router ip
@@ -33,7 +34,7 @@ type MDHT struct {
   DiscoveredInfohash    map[string]int
   AllowedPubKey         *map[string]int
 
-  PeerRouteActionList map[string]func(map[string]string)
+  PeerRouteActionHandlerMapping map[string]func(map[string]string)
 
   Log *mlog.Mlog
   sync.Mutex

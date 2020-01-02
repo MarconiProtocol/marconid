@@ -1,14 +1,15 @@
 package magent_base
 
 import (
-  "../../../core/runtime"
   "../../../core/crypto/dh"
   "../../../core/crypto/key"
   "../../../core/net/core/manager"
   "../../../core/net/vars"
+  "../../../core/runtime"
+  "../../../util"
   "errors"
   "fmt"
-  "gitlab.neji.vm.tc/marconi/log"
+  mlog "github.com/MarconiProtocol/log"
   "net"
   "strconv"
   "strings"
@@ -20,7 +21,7 @@ import (
 */
 func CreateConnectionToServicePeer(peerPubKeyHash string, keyFile string, isSecure bool, peerIp string) error {
   keyManager := mcrypto_key.KeyManagerInstance()
-  localTargetPort := getMutualMPipePort(keyManager.GetBasePublicKeyHash(), peerPubKeyHash)
+  localTargetPort := mutil.GetMutualMPipePort(keyManager.GetBasePublicKeyHash(), peerPubKeyHash)
 
   // Check to see if the peer is a valid potential peer
   peerIp = strings.TrimSpace(peerIp)
@@ -54,8 +55,8 @@ func CreateConnectionToServicePeer(peerPubKeyHash string, keyFile string, isSecu
           EncPayload:   isSecure,
           LocalPort:    strconv.Itoa(localTargetPort),
           RemoteIpAddr: peerIp,
-          RemotePort:   strconv.Itoa(localTargetPort),  // We use the same remote port as the local port because each side will deterministically get the port number
-                                                        // this however means the port must be open, otherwise it is an error case
+          RemotePort:   strconv.Itoa(localTargetPort), // We use the same remote port as the local port because each side will deterministically get the port number
+          // this however means the port must be open, otherwise it is an error case
           DataKey:        dhKeyInfo.SymmetricKeyBytes,
           DataKeySignal:  dhKeyInfo.KeySignal,
           PeerPubKeyHash: peerPubKeyHash,

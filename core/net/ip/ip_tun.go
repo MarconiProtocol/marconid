@@ -3,14 +3,14 @@ package mnet_ip
 import (
   "../../sys/cmd"
   "fmt"
+  mlog "github.com/MarconiProtocol/log"
   "time"
-  "gitlab.neji.vm.tc/marconi/log"
 )
 
 func ConfigIpAddressForNewTunByCommand(
   taptunID string, ipAddr string, netmask string, peerIpAddr string, peerGatewayIpAddr string) (ret bool) {
   retCmdIpAddr := ConfigTunIpAddrByCommand(taptunID, ipAddr, netmask, peerIpAddr, peerGatewayIpAddr)
-  fmt.Println("tun: ifconfig ", retCmdIpAddr, peerIpAddr)
+  fmt.Println("tun config: ", retCmdIpAddr, peerIpAddr)
 
   //TODO: call when peer is connected
   //NOTE: may not need to call when peer is connected/server side since this is tun which is for client or end point/grey
@@ -27,7 +27,7 @@ func ConfigIpAddressForNewTunByCommand(
     fmt.Println("route: brctl:white listing target ip address ",
       res, "gw ip:", gwIpAddr, "peer:", peerIpAddr, "reroute:", retRerouteAll)
   } else {
-    fmt.Println("no peer ip address found or waiting mode - possible distribtion node mode/listening/waiting mode")
+    fmt.Println("no peer ip address found or waiting mode - possible distribution node mode/listening/waiting mode")
 
     //sysctl -w for system level forwarding enabling
     retTrafficForwardSys := allowTrafficForwardOnSystem()

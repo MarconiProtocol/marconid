@@ -1,19 +1,21 @@
 package msys_cmd_osx
 
 import (
-	"errors"
-	"fmt"
-	"os/exec"
-	"strconv"
+  "errors"
+  "fmt"
+  "os/exec"
+  "strconv"
 )
 
 const (
-	GREP_CMD 		= "/usr/bin/grep"
-	AWK_CMD 		= "/usr/bin/awk"
-	CUT_CMD 		= "/usr/bin/cut"
-	IFCONFIG_CMD 	= "/sbin/ifconfig"
-	ROUTE_CMD		= "/sbin/route"
-	NETSTAT_CMD		= "/usr/sbin/netstat"
+  GREP_CMD      = "/usr/bin/grep"
+  AWK_CMD       = "/usr/bin/awk"
+  CUT_CMD       = "/usr/bin/cut"
+  IFCONFIG_CMD  = "/sbin/ifconfig"
+  ROUTE_CMD     = "/sbin/route"
+  NETSTAT_CMD   = "/usr/sbin/netstat"
+  SOFTFLOWD_CMD = "/usr/sbin/softflowd"
+  NFCAPD_CMD    = "/usr/bin/nfcapd"
 )
 
 // NOTE: OSX is not ready, we should revisit this when we are working on support for OSX
@@ -24,11 +26,13 @@ const (
 		pattern - the pattern to match input on
 		invert - whether the match should be inverted
 */
-func (c CmdSuite)  grepCmd(pattern string, invert bool) (*exec.Cmd, error) {
-	grepCmd := exec.Command(GREP_CMD)
-	if invert { grepCmd.Args = append(grepCmd.Args, "-v") }
-	grepCmd.Args = append(grepCmd.Args, pattern)
-	return grepCmd, nil
+func (c CmdSuite) grepCmd(pattern string, invert bool) (*exec.Cmd, error) {
+  grepCmd := exec.Command(GREP_CMD)
+  if invert {
+    grepCmd.Args = append(grepCmd.Args, "-v")
+  }
+  grepCmd.Args = append(grepCmd.Args, pattern)
+  return grepCmd, nil
 }
 
 /*
@@ -36,36 +40,42 @@ func (c CmdSuite)  grepCmd(pattern string, invert bool) (*exec.Cmd, error) {
 		indices - integer indices starting from 1 of the fields to print, where 1 is the first field
 */
 func (c CmdSuite) awkPrintCmd(indices ...int) (*exec.Cmd, error) {
-	awkPrintCmd := exec.Command(AWK_CMD)
-	printIndices := ""
-	for _, index := range indices {
-		printIndices += fmt.Sprintf("$%d ", index)
-	}
-	printArg := fmt.Sprintf("{print %s}", printIndices)
-	awkPrintCmd.Args = append(awkPrintCmd.Args, printArg)
-	return awkPrintCmd, nil
+  awkPrintCmd := exec.Command(AWK_CMD)
+  printIndices := ""
+  for _, index := range indices {
+    printIndices += fmt.Sprintf("$%d ", index)
+  }
+  printArg := fmt.Sprintf("{print %s}", printIndices)
+  awkPrintCmd.Args = append(awkPrintCmd.Args, printArg)
+  return awkPrintCmd, nil
 }
 
 /*
 	Cut command helps to remove sections from lines of text/files
 		delim - the delimiting character that separates fields, if left blank, the -d flag is not set and TAB will be used
 		fields - only keeps the fields listed
- */
-func (c CmdSuite) cutCmd(delim string, fields string)	(*exec.Cmd, error) {
-	cutCmd := exec.Command(CUT_CMD)
-	if delim != "" { cutCmd.Args = append(cutCmd.Args, "-d" + delim) }
-	if fields != "" { cutCmd.Args = append(cutCmd.Args, "-f" + fields)}
-	return cutCmd, nil
+*/
+func (c CmdSuite) cutCmd(delim string, fields string) (*exec.Cmd, error) {
+  cutCmd := exec.Command(CUT_CMD)
+  if delim != "" {
+    cutCmd.Args = append(cutCmd.Args, "-d"+delim)
+  }
+  if fields != "" {
+    cutCmd.Args = append(cutCmd.Args, "-f"+fields)
+  }
+  return cutCmd, nil
 }
 
 /*
 	ifconfig command to display all interfaces or the specified interface
 		iface - the name of the interface to be displayed
- */
+*/
 func (c CmdSuite) ifconfigCmd(iface string) (*exec.Cmd, error) {
-	ifconfigCmd := exec.Command(IFCONFIG_CMD)
-	if iface != "" { ifconfigCmd.Args = append(ifconfigCmd.Args, iface) }
-	return ifconfigCmd, nil
+  ifconfigCmd := exec.Command(IFCONFIG_CMD)
+  if iface != "" {
+    ifconfigCmd.Args = append(ifconfigCmd.Args, iface)
+  }
+  return ifconfigCmd, nil
 }
 
 /*
@@ -73,34 +83,44 @@ func (c CmdSuite) ifconfigCmd(iface string) (*exec.Cmd, error) {
 		iface - the name of the interface to be modified
 		ipaddr - the ip address to be set to the interface
 		netmask - the netmask to be set to the interface
- */
+*/
 func (c CmdSuite) ifconfigIpAddrCmd(iface string, ipAddr string, netmask string) (*exec.Cmd, error) {
-	ifconfigCmd := exec.Command(IFCONFIG_CMD)
-	if iface != "" { ifconfigCmd.Args = append(ifconfigCmd.Args, iface, ipAddr, "netmask", netmask) }
-	return ifconfigCmd, nil
+  ifconfigCmd := exec.Command(IFCONFIG_CMD)
+  if iface != "" {
+    ifconfigCmd.Args = append(ifconfigCmd.Args, iface, ipAddr, "netmask", netmask)
+  }
+  return ifconfigCmd, nil
 }
 
 /*
 	ifconfig command to bring up/down a specified interface
 		iface - the name of the interface to be brought up/down
 		up - true => up / false => down
- */
+*/
 func (c CmdSuite) ifconfigUp(iface string, up bool) (*exec.Cmd, error) {
-	ifconfigCmd := exec.Command(IFCONFIG_CMD)
-	status := ""
-	if up { status = "up" } else { status = "down"}
-	if iface != "" { ifconfigCmd.Args = append(ifconfigCmd.Args, iface, status)}
-	return ifconfigCmd, nil
+  ifconfigCmd := exec.Command(IFCONFIG_CMD)
+  status := ""
+  if up {
+    status = "up"
+  } else {
+    status = "down"
+  }
+  if iface != "" {
+    ifconfigCmd.Args = append(ifconfigCmd.Args, iface, status)
+  }
+  return ifconfigCmd, nil
 }
 
 /*
 	route command with the optional use of n flag
 		nflag - prints the ip address instead of the hostnames
- */
+*/
 func (c CmdSuite) routeCmd(nflag bool) (*exec.Cmd, error) {
-	routeCmd := exec.Command(ROUTE_CMD)
-	if nflag { routeCmd.Args = append(routeCmd.Args, "-n") }
-	return routeCmd, nil
+  routeCmd := exec.Command(ROUTE_CMD)
+  if nflag {
+    routeCmd.Args = append(routeCmd.Args, "-n")
+  }
+  return routeCmd, nil
 }
 
 /*
@@ -109,15 +129,15 @@ func (c CmdSuite) routeCmd(nflag bool) (*exec.Cmd, error) {
 		gatewayIp - the gateway machine that packets destined for destIp will be forwarded
 		netmask - the netmask associated with provided destIp
 		device - the network device/interface that will be used to flush the traffic
- */
+*/
 func (c CmdSuite) routeAddRouteCmd(destIp string, gatewayIp string, netmaskLength int) (*exec.Cmd, error) {
-	routeCmd := exec.Command(ROUTE_CMD)
-	if destIp == "" || gatewayIp == "" || !(netmaskLength > 0 && netmaskLength <= 32) {
-		return nil, errors.New("destIp, gatewayIp, netmaskLength must be provided to routeAddRouteCmd")
-	}
-	destIp = destIp + "/" + strconv.Itoa(netmaskLength)
-	routeCmd.Args = append(routeCmd.Args, "-n", "add", "-net", destIp, gatewayIp)
-	return routeCmd, nil
+  routeCmd := exec.Command(ROUTE_CMD)
+  if destIp == "" || gatewayIp == "" || !(netmaskLength > 0 && netmaskLength <= 32) {
+    return nil, errors.New("destIp, gatewayIp, netmaskLength must be provided to routeAddRouteCmd")
+  }
+  destIp = destIp + "/" + strconv.Itoa(netmaskLength)
+  routeCmd.Args = append(routeCmd.Args, "-n", "add", "-net", destIp, gatewayIp)
+  return routeCmd, nil
 }
 
 /*
@@ -126,26 +146,61 @@ func (c CmdSuite) routeAddRouteCmd(destIp string, gatewayIp string, netmaskLengt
 		gatewayIp - the gateway machine that packets destined for destIp will be forwarded
 		netmask - the netmask associated with provided destIp
 		device - the network device/interface that will be used to flush the traffic
- */
+*/
 func (c CmdSuite) routeDelRouteCmd(destIp string, gatewayIp string, netmaskLength int) (*exec.Cmd, error) {
-	routeCmd := exec.Command(ROUTE_CMD)
-	if destIp == "" || gatewayIp == "" || !(netmaskLength > 0 && netmaskLength <= 32) {
-		return nil, errors.New("destIp, gatewayIp, netmaskLength must be provided to routeAddRouteCmd")
-	}
-	destIp = destIp + "/" + strconv.Itoa(netmaskLength)
-	routeCmd.Args = append(routeCmd.Args, "-n", "delete", "-net", destIp, gatewayIp)
-	return routeCmd, nil
+  routeCmd := exec.Command(ROUTE_CMD)
+  if destIp == "" || gatewayIp == "" || !(netmaskLength > 0 && netmaskLength <= 32) {
+    return nil, errors.New("destIp, gatewayIp, netmaskLength must be provided to routeAddRouteCmd")
+  }
+  destIp = destIp + "/" + strconv.Itoa(netmaskLength)
+  routeCmd.Args = append(routeCmd.Args, "-n", "delete", "-net", destIp, gatewayIp)
+  return routeCmd, nil
 }
-
 
 /*
 	netstat command with optional use of r and n flags
 		rflag - prints the kernel routing tables
 		nflag - prints the ip address instead of the hostnames
- */
+*/
 func (c CmdSuite) netstatCmd(rflag bool, nflag bool) (*exec.Cmd, error) {
-	netstatCmd := exec.Command(NETSTAT_CMD)
-	if rflag { netstatCmd.Args = append(netstatCmd.Args, "-r") }
-	if nflag { netstatCmd.Args = append(netstatCmd.Args, "-n") }
-	return netstatCmd, nil
+  netstatCmd := exec.Command(NETSTAT_CMD)
+  if rflag {
+    netstatCmd.Args = append(netstatCmd.Args, "-r")
+  }
+  if nflag {
+    netstatCmd.Args = append(netstatCmd.Args, "-n")
+  }
+  return netstatCmd, nil
+}
+
+/*
+  softflowd command to monitor an interface with configurable collector ip:port
+    bridgeInterfaceName - name of the interface to monitor
+    collectorIp - ip of the collector of netflow traffic
+    collectorPort - port of the collector of netflow traffic
+    maxflowLifeSeconds - duration of a flow before force expiry and write to log
+*/
+func (c CmdSuite) softflowdCmd(bridgeInterfaceName string, collectorIp string, collectorPort string, maxflowLifeSeconds int) (*exec.Cmd, error) {
+  softflowdCmd := exec.Command(SOFTFLOWD_CMD)
+  softflowdCmd.Args = append(softflowdCmd.Args, "-v", "9", "-i", bridgeInterfaceName,
+    "-n", collectorIp+":"+collectorPort, "-t",
+    "maxlife="+strconv.Itoa(maxflowLifeSeconds)+"s")
+  return softflowdCmd, nil
+}
+
+/*
+  nfcapd command to collect from
+    collectorIp - ip to run this collector on
+    collectorPort - port to run this collector on
+    netflowDirector - directory to dump netflow records to
+*/
+func (c CmdSuite) nfcapdCmd(collectorIp string, collectorPort string, netflowDirectory string) (*exec.Cmd, error) {
+  nfcapdCmd := exec.Command(NFCAPD_CMD)
+  nfcapdCmd.Args = append(nfcapdCmd.Args, "-T", "all")
+  if netflowDirectory != "" {
+    nfcapdCmd.Args = append(nfcapdCmd.Args, "-l", netflowDirectory)
+  } else {
+    nfcapdCmd.Args = append(nfcapdCmd.Args, "-l", "./var/log/netflow")
+  }
+  return nfcapdCmd, nil
 }

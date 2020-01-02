@@ -1,22 +1,22 @@
 package magent_base
 
 import (
-  "../../../core/config"
-  "../../../core/runtime"
   "../../../core/blockchain"
   "../../../core/blockchain/vars"
+  "../../../core/config"
   "../../../core/crypto/dh"
   "../../../core/crypto/key"
   "../../../core/net/core/manager"
   "../../../core/net/dht"
   "../../../core/net/vars"
   "../../../core/peer"
-  "./peer_updates"
+  "../../../core/runtime"
   "../middleware/interface"
+  "./peer_updates"
   "crypto/rsa"
   "fmt"
-  "gitlab.neji.vm.tc/marconi/log"
-  "math/big"
+  "github.com/MarconiProtocol/log"
+  "github.com/armon/go-socks5"
   "os"
   "strings"
   "sync"
@@ -30,8 +30,10 @@ type AgentClient struct {
   teardownSignal                 chan os.Signal
   peerResponseHandlerStatus      map[string]bool
   peerResponseHandlerStatusMutex sync.Mutex
-  baseBeaconKey         *rsa.PrivateKey
-  baseL2KeyFilePath     string
+  baseBeaconKey                  *rsa.PrivateKey
+  baseL2KeyFilePath              string
+  edgeBeaconKey                  *rsa.PrivateKey
+  socks5Server                   *socks5.Server
 }
 
 /*
@@ -40,6 +42,7 @@ type AgentClient struct {
 func NewAgentClient(conf *AgentConfig) *AgentClient {
   agentClient := AgentClient{}
   agentClient.initialize(conf)
+  Agent = &agentClient
   return &agentClient
 }
 
@@ -59,6 +62,12 @@ func (agent *AgentClient) Start() {
   mnet_dht.GetBeaconManager().StartBaseRouteAnnouncement(&agent.baseBeaconKey.PublicKey)
   mnet_dht.GetBeaconManager().CreatePeerRouteBeacon(agent.requestPeerResponseHandler)
   mnet_dht.GetBeaconManager().StartPeerRouteAnnouncement()
+
+  // Start the edge route beacon
+  if agent.edgeBeaconKey != nil {
+    mnet_dht.GetBeaconManager().CreateEdgeRouteBeacon(nil)
+    mnet_dht.GetBeaconManager().StartEdgeRouteAnnouncement(&agent.edgeBeaconKey.PublicKey)
+  }
 
   // peerUpdatesChannel is populated when agent relevant peer update is received
   peerUpdatesChannel := mblockchain.GetBlockchainManager().GetPeerUpdates()
@@ -85,7 +94,7 @@ func (agent *AgentClient) Start() {
 func (agent *AgentClient) idleForNetworkContractAddress() {
   const WAIT_SLEEP_TIME_S = 2
   for {
-    networkContractAddress := mconfig.GetUserConfig().Blockchain.NetworkContractAddress
+    networkContractAddress := mconfig.GetUserConfig().Blockchain.Network_Contract_Address
     if strings.Compare(networkContractAddress, mnet_vars.EMPTY_CONTRACT_ADDRESS) != 0 {
       break
     }
@@ -176,40 +185,14 @@ func (agent *AgentClient) requestPeerResponseHandler(args map[string]string) {
         logErrorAndUpdateStatus(err)
         return
       }
+
+      // Stop the peer route request for this peerPubKeyHash
+      mnet_dht.GetBeaconManager().StopPeerRouteRequest(peerPubKeyHash)
     }
+
     // Always clean up the status
     agent.peerResponseHandlerStatus[peerPubKeyHash] = false
   } else {
     agent.peerResponseHandlerStatusMutex.Unlock()
   }
-}
-
-/*
-  Return an integer that is deterministically calculated from two pubkeyhashes
-  The resulting integer is used as the mpipe port between the two pubkeyhash owners as a form of psuedo port negotiation
-*/
-func getMutualMPipePort(pubKeyHash string, peerPubKeyHash string) int {
-  // choose a big enough prime number to use as the number of buckets
-  bucketSize := big.NewInt(7919)
-  // the base port is added to the result of the modulus to get the final port
-  var basePort = 40000
-
-  // concatenate the pubkeyhash strings based on a simple sorting order
-  var concatPubKeyHash string
-  if pubKeyHash >= peerPubKeyHash {
-    concatPubKeyHash = pubKeyHash + peerPubKeyHash
-  } else {
-    concatPubKeyHash = peerPubKeyHash + pubKeyHash
-  }
-
-  // grab the bytes for the concatenated pubkey hashes and use the bytes to create a big int
-  concatPubKeyHashBytes := []byte(concatPubKeyHash)
-  num := &big.Int{}
-  num.SetBytes(concatPubKeyHashBytes)
-  // get the modulus of this big int number based on the prime bucket size
-  res := &big.Int{}
-  res.Mod(num, bucketSize)
-
-  // The resulting port is the modulus added to the base port number
-  return basePort + int(res.Int64())
 }

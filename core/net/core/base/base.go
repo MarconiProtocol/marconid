@@ -1,15 +1,13 @@
 package mnet_core_base
 
 import (
+  "../../vars"
   "bytes"
   "encoding/binary"
   "errors"
+  mlog "github.com/MarconiProtocol/log"
   "hash"
   "time"
-
-  "../../vars"
-
-  "gitlab.neji.vm.tc/marconi/log"
 )
 
 var Log *mlog.Mlog

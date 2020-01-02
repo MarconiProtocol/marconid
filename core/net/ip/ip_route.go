@@ -8,7 +8,7 @@ import (
 
 /*
   Add a route (routing table entry) to the targetIpAddr through the gatewayIpAddr
- */
+*/
 func ConfigRouteTargetIpAddr(targetIpAddr string, gatewayIpAddr string) (string, error) {
   cmdSuite, err := msys_cmd.GetSuite()
   if err != nil {
@@ -25,8 +25,8 @@ func ConfigRouteTargetIpAddr(targetIpAddr string, gatewayIpAddr string) (string,
 
 /*
   Direct all net traffic to through a gateway
- */
-func RerouteAllTraffic(gatewayIpAddr string) (string, error){
+*/
+func RerouteAllTraffic(gatewayIpAddr string) (string, error) {
   cmdSuite, err := msys_cmd.GetSuite()
   if err != nil {
     return "", errors.New(fmt.Sprintf("Failed to get cmd suite: %s", err))

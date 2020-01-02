@@ -6,7 +6,7 @@ import (
   "crypto/rand"
   "encoding/base64"
   "fmt"
-  "gitlab.neji.vm.tc/marconi/log"
+  mlog "github.com/MarconiProtocol/log"
   "io/ioutil"
   "os"
 )

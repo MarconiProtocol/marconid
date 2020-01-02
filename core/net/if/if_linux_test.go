@@ -17,7 +17,7 @@ func TestCreateInterface(t *testing.T) {
     wantCreatedIFName string
     wantErr           bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -43,7 +43,7 @@ func Test_newTUN(t *testing.T) {
     wantIfce *Interface
     wantErr  bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -69,7 +69,7 @@ func Test_newTAP(t *testing.T) {
     wantIfce *Interface
     wantErr  bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -97,7 +97,7 @@ func Test_createInterface(t *testing.T) {
     wantCreatedIFName string
     wantErr           bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -125,7 +125,7 @@ func TestInterface_Open2(t *testing.T) {
     args    args
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -148,7 +148,7 @@ func TestInterface_Open(t *testing.T) {
     args     args
     wantErr  bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -164,7 +164,7 @@ func TestInterface_Close(t *testing.T) {
     name string
     inet *Interface
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -184,7 +184,7 @@ func TestInterface_Read(t *testing.T) {
     wantN   int
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -211,7 +211,7 @@ func TestInterface_Write(t *testing.T) {
     wantN   int
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {

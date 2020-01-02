@@ -6,7 +6,7 @@ import (
 
 //Tap or Tun software interface runtime info
 type InterfaceRuntime struct {
-  localMainInterfaceIpAddr      string
+  localMainInterfaceIpAddr string
   sync.Mutex
 }
 

@@ -3,7 +3,7 @@ package mpeer
 import (
   "errors"
   "fmt"
-  "gitlab.neji.vm.tc/marconi/log"
+  mlog "github.com/MarconiProtocol/log"
   "sync"
 )
 
@@ -13,6 +13,7 @@ type PeerType int
 
 const (
   SERVICE_PEER PeerType = iota
+  EDGE_PEER
 )
 
 type PeerManager struct {

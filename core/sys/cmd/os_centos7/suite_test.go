@@ -9,7 +9,7 @@ func TestCmdSuite_GetOwnGatewayIpAddress(t *testing.T) {
     want    string
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -32,7 +32,7 @@ func TestCmdSuite_GetMainInterfaceIpAddress(t *testing.T) {
     want    string
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -59,7 +59,7 @@ func TestCmdSuite_AddBridgeInterface(t *testing.T) {
     want    string
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -88,7 +88,7 @@ func TestCmdSuite_ConfigureBridgeInterface(t *testing.T) {
     want    string
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -115,7 +115,7 @@ func TestCmdSuite_UpBridgeInterface(t *testing.T) {
     want    string
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -143,7 +143,7 @@ func TestCmdSuite_AddRouteToIp(t *testing.T) {
     want    string
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -170,7 +170,7 @@ func TestCmdSuite_DelRouteToIp(t *testing.T) {
     want    string
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -198,7 +198,7 @@ func TestCmdSuite_AddInterfaceToBridge(t *testing.T) {
     want    string
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -225,7 +225,7 @@ func TestCmdSuite_AddRerouteTrafficToGateway(t *testing.T) {
     want    string
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -252,7 +252,7 @@ func TestCmdSuite_RemoveRerouteTrafficToGateway(t *testing.T) {
     want    string
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -279,7 +279,7 @@ func TestCmdSuite_AllowIpForward(t *testing.T) {
     want    string
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -307,7 +307,7 @@ func TestCmdSuite_AllowTrafficForwardingOnInterface(t *testing.T) {
     want    string
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {

@@ -1,12 +1,12 @@
 ## Background
-Marconi Protocol and the Marconi Blockchain facilitates secure network communication, flexible network infrastructure, and the formation of mesh networks. Please see [White-Paper](https://docsend.com/view/5zragmb) for more details about Marconi.
+Marconi Protocol and the Marconi Blockchain facilitates secure network communication, flexible network infrastructure, and the formation of mesh networks. Please see the [White Paper](https://docsend.com/view/5zragmb) for more details about Marconi.
 
-On a high-level, Marconi consists of 4 major components:
+Marconi consists of four major components:
 
-*  **Marconid**: the Marconi daemon that interface with the operating system's networking functionality and handles the networking related interactions between the node and its peers on the Marconi networks.
-*  **Go-Marconi**: the Marconi blockchain, responsible for finding peers through the bootnodes and connects and sync'ing blocks from the Global Chain.
+*  **Marconid**: the Marconi daemon that interfaces with the operating system's networking functionality and handles the networking related interactions between the node and its peers on Marconi networks.
+*  **Go-Marconi**: the Marconi blockchain, responsible for finding peers through the bootnodes, connecting to them and sync'ing blocks from the Global Chain.
 *  **Middleware**: acts as a bridge between Go-Marconi and Marconid by exposing JSON RPC APIs. 
-*  **CLI**: command-line interface to all of the Marconi components, allowing the user to run commands and interact with the Marconi Network. It's also responsible for ensuring all of the required packages are downloaded/updated and any configurations are executed as needed.
+*  **CLI**: command-line interface to all of the Marconi components, allowing the user to run commands and interact with Marconi networks. It's also responsible for ensuring all of the required packages are downloaded/updated and any configurations are executed as needed.
  
 For more information about the Marconi Architecture and the major components, please refer to [Architecture Overview](https://github.com/MarconiProtocol/wiki/wiki/Architecture-Overview).
 
@@ -22,7 +22,7 @@ Marconid (Marconi Daemon) creates and manages mPipe connections between nodes. T
 *  **core/sys** - system level commands interfacing with the operating system
 
 ## Pre-requisite
-Golang should be already installed and GOPATH/GOROOT are configured.
+Golang should be already installed with GOPATH/GOROOT configured
 
 ## Get dependencies
 `go get ./...`
@@ -31,7 +31,7 @@ Golang should be already installed and GOPATH/GOROOT are configured.
 `go build -o marconid agent/service/main.go`
 
 ## Run Tests
-Pre-requisite: Golang should be already installed and GOPATH/GOROOT are configured.
+Pre-requisite: Golang should be already installed with GOPATH/GOROOT configured
 
 `cd util`
 

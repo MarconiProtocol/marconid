@@ -10,7 +10,7 @@ func TestGetMRuntime(t *testing.T) {
     name string
     want *RuntimeInfo
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -26,7 +26,7 @@ func TestRuntimeInfo_initialize(t *testing.T) {
     name string
     r    *RuntimeInfo
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -40,7 +40,7 @@ func TestRuntimeInfo_SetRuntimeOS(t *testing.T) {
     name string
     r    *RuntimeInfo
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -55,7 +55,7 @@ func TestRuntimeInfo_GetRuntimeOS(t *testing.T) {
     r    *RuntimeInfo
     want int
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {

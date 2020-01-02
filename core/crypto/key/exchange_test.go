@@ -18,7 +18,7 @@ func TestKeyManager_registerRPCHandlers(t *testing.T) {
     name   string
     fields fields
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -50,7 +50,7 @@ func TestKeyManager_InitiatePublicKeyExchange(t *testing.T) {
     args    args
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -84,7 +84,7 @@ func TestKeyManager_SendPubKeyExchangeSynRPC(t *testing.T) {
     args    args
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -119,7 +119,7 @@ func TestKeyManager_handlePubKeyExchangeSynRPC(t *testing.T) {
     fields fields
     args   args
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -129,7 +129,7 @@ func TestKeyManager_handlePubKeyExchangeSynRPC(t *testing.T) {
         sentRPC:        tt.fields.sentRPC,
         sentRPCMutex:   tt.fields.sentRPCMutex,
       }
-      km.handlePubKeyExchangeSynRPC(tt.args.r, tt.args.w, tt.args.reqInfohash, tt.args.reqPayload)
+      km.handlePubKeyExchangeSynRPC(tt.args.r, tt.args.w, tt.args.reqPayload)
     })
   }
 }
@@ -145,7 +145,7 @@ func Test_buildPubKeyExchangePayload(t *testing.T) {
     args args
     want string
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -168,7 +168,7 @@ func Test_parsePubKeyExchangePayload(t *testing.T) {
     wantPeerPubKeyHash string
     wantEncodedPubKey  string
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -206,7 +206,7 @@ func TestKeyManager_isRpcSenderReceiverValid(t *testing.T) {
     args   args
     want   bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -235,7 +235,7 @@ func Test_createSignature(t *testing.T) {
     args          args
     wantSignature string
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {
@@ -259,7 +259,7 @@ func Test_verifySignature(t *testing.T) {
     args    args
     wantErr bool
   }{
-    // TODO: Add test cases.
+  // TODO: Add test cases.
   }
   for _, tt := range tests {
     t.Run(tt.name, func(t *testing.T) {

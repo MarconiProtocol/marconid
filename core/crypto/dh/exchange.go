@@ -1,10 +1,10 @@
 package mcrypto_dh
 
 import (
-  "../key"
+  "../../../util"
   "../../peer"
   "../../rpc"
-  "../../../util"
+  "../key"
   "bytes"
   "crypto"
   "crypto/rand"
@@ -13,14 +13,31 @@ import (
   "encoding/base64"
   "errors"
   "fmt"
-  "gitlab.neji.vm.tc/marconi/log"
+  mlog "github.com/MarconiProtocol/log"
   "net/http"
   "strings"
 )
 
+type DHExchangeSYNArgs struct {
+  Payload string
+}
+
+type DHExchangeSYNReply struct {
+  Payload string
+}
+
+type DHExchangeService struct{}
+
+func (dhm *DHExchangeService) DHExchangeSYNRPC(r *http.Request, args *DHExchangeSYNArgs, reply *DHExchangeSYNReply) error {
+  return DHExchangeManagerInstance().HandleSYNRPC(r, args, reply)
+}
+
 func (dhm *DHExchangeManager) registerRPCHandlers() {
   // Register functions to handle named RPCs
-  rpc.RegisterRpcHandler(rpc.REQUEST_DH_KEY_EXCHANGE_SYN, dhm.handleSynRPC)
+  dHExchangeService := new(DHExchangeService)
+  if err := rpc.RegisterService(dHExchangeService, ""); err != nil {
+    mlog.GetLogger().Error("Failed to register RPC service for DHExchangeManager")
+  }
 }
 
 func (dhm *DHExchangeManager) InitiateDHKeyExchange(peerPubKeyHash string) error {
@@ -42,7 +59,7 @@ func (dhm *DHExchangeManager) InitiateDHKeyExchange(peerPubKeyHash string) error
 
   dhKeyInfo := dhm.getDHKeyInfoForPeer(peerPubKeyHash)
   if dhKeyInfo.SymmetricKey == nil {
-    return dhm.SendSynRPC(host, peerPubKey, dhKeyInfo)
+    return dhm.sendSynRPC(host, peerPubKey, dhKeyInfo)
   }
 
   return nil
@@ -51,18 +68,20 @@ func (dhm *DHExchangeManager) InitiateDHKeyExchange(peerPubKeyHash string) error
 /*
   SendSynRPC will send out the RPC to start the DH exchange handshake with the specific peer
 */
-func (dhm *DHExchangeManager) SendSynRPC(targetHost string, peerPubKey *rsa.PublicKey, dhKeyInfo *DHKeyInfo) error {
+func (dhm *DHExchangeManager) sendSynRPC(targetHost string, peerPubKey *rsa.PublicKey, dhKeyInfo *DHKeyInfo) error {
   mlog.GetLogger().Debug(fmt.Sprintf("DHExchange::SendSynRPC - Sending syn to %s", targetHost))
   payload := buildPayload(peerPubKey, dhKeyInfo)
 
-  response := rpc.SendRPC(targetHost, rpc.RPC_PORT, rpc.REQUEST_DH_KEY_EXCHANGE_SYN, payload)
-  if response.Error != "" {
-    return errors.New(fmt.Sprintf("DHExchange::SendSynRPC - Nil/error response from: %s; response: %v", targetHost, response.Error))
+  args := DHExchangeSYNArgs{Payload: payload}
+  reply := DHExchangeSYNReply{}
+  cli := rpc.NewRPCClient(targetHost)
+  if err := cli.Call("DHExchangeService.DHExchangeSYNRPC", &args, &reply); err != nil {
+    return errors.New(fmt.Sprintf("DHExchange::SendSynRPC - Nil/error response from: %s; response: %v", targetHost, err))
   }
 
   mlog.GetLogger().Debug(fmt.Sprintf("DHExchange::SendSynRPC - Received response from: %s", targetHost))
 
-  senderPubKeyHash, encodedPeerDHPubKey := parsePayload(response.Result)
+  senderPubKeyHash, encodedPeerDHPubKey := parsePayload(reply.Payload)
 
   // Try to decode the payload into the peerpublickey
   senderDHhKeyInfo := dhm.getDHKeyInfoForPeer(senderPubKeyHash)
@@ -75,26 +94,19 @@ func (dhm *DHExchangeManager) SendSynRPC(targetHost string, peerPubKey *rsa.Publ
   return nil
 }
 
-/*
-  handleSynRPC is invoked in response to receiving rpc.REQUEST_DH_KEY_EXCHANGE_SYN
-  The symmetric key for the peer is generated and an ACK is sent in response
-*/
-func (dhm *DHExchangeManager) handleSynRPC(r *http.Request, w http.ResponseWriter, reqInfohash string, reqPayload string) {
+func (dhm *DHExchangeManager) HandleSYNRPC(r *http.Request, args *DHExchangeSYNArgs, reply *DHExchangeSYNReply) error {
   // Using the sender IP in the http request; sender could be behind NAT
   ip, _, err := rpc.ParseIPAndPort(r.RemoteAddr)
   if err != nil {
-    mlog.GetLogger().Error(fmt.Sprintf("DHExchange::handleSynRPC - could not parse remote address / port from request"))
-    err = rpc.WriteResponseWithError(&w, "could not parse remote address from request")
-    return
+    mlog.GetLogger().Error(fmt.Sprintf("DHExchange::HandleSYNRPC - could not parse remote address / port from request"))
+    return errors.New("could not parse remote address from request")
   }
-
-  senderPubKeyHash, encodedPeerDHPubKey := parsePayload(reqPayload)
-  mlog.GetLogger().Debug(fmt.Sprintf("DHExchange::handleSynRPC : RECEIVED SYN from %s", r.RemoteAddr))
+  senderPubKeyHash, encodedPeerDHPubKey := parsePayload(args.Payload)
+  mlog.GetLogger().Debug(fmt.Sprintf("DHExchange::HandleSYNRPC : RECEIVED SYN from %s", r.RemoteAddr))
   senderPubKey, err := mcrypto_key.KeyManagerInstance().GetPeerPublicKey(senderPubKeyHash)
   if err != nil {
     mlog.GetLogger().Debug("Don't have the public key of the peer that sent DHExchange syn, possible error case")
-    err = rpc.WriteResponseWithError(&w, "did not have peer public key")
-    return
+    return errors.New("did not have peer public key")
   }
 
   // Get DHKeyInfo for peer and try to decode peer's public key into the struct instance
@@ -105,11 +117,10 @@ func (dhm *DHExchangeManager) handleSynRPC(r *http.Request, w http.ResponseWrite
     dhKeyInfo.GenDHSymmetricKey()
 
     mlog.GetLogger().Debug(fmt.Sprintf("DHExchange::replying with ACK - SENDING ACK to %s", ip))
-    payload := buildPayload(senderPubKey, dhKeyInfo)
-    err := rpc.WriteResponseWithResult(&w, payload)
-    if err != nil {
-      mlog.GetLogger().Debug(fmt.Sprintf("DHExchange:: error writing to response, err: %s", err))
-    }
+    reply.Payload = buildPayload(senderPubKey, dhKeyInfo)
+    return nil
+  } else {
+    return err
   }
 }
 
@@ -205,7 +216,7 @@ func parsePayload(payload string) (peerPubKeyHash string, encodedPeerDHKey strin
   // base64 decode the payload
   payloadBytes, err := base64.StdEncoding.DecodeString(payload)
   if err != nil {
-    mlog.GetLogger().Error("Failed to decode dh exchange payload")
+    mlog.GetLogger().Error("Failed to decode dh exchange payload: ", err)
     return "", ""
   }
   payload = string(payloadBytes)
@@ -256,7 +267,7 @@ func encryptDataPayload(peerPubKey *rsa.PublicKey, dataPayload string) (signatur
 
   signatureBytes, err := rsa.SignPSS(rand.Reader, privateKey, newhash, hashed, &opts)
   if err != nil {
-    mlog.GetLogger().Fatal("Failed to generate signature")
+    mlog.GetLogger().Fatal("Failed to generate signature: ", err)
   }
 
   return base64.StdEncoding.EncodeToString(signatureBytes), base64.StdEncoding.EncodeToString(cipherTextBytes)
@@ -280,7 +291,7 @@ func decryptDataPayload(peerPubKey *rsa.PublicKey, signatureEncoded string, ciph
   // function comment block says the random is used to prevent side channel timing attacks, thats awesome
   plainTextBytes, err := rsa.DecryptOAEP(hash, rand.Reader, privateKey, cipherTextBytes, labelBytes)
   if err != nil {
-    mlog.GetLogger().Fatal("Decryption of data payload failed")
+    mlog.GetLogger().Fatal("Decryption of data payload failed: ", err)
   }
 
   // verify signature
@@ -295,7 +306,7 @@ func decryptDataPayload(peerPubKey *rsa.PublicKey, signatureEncoded string, ciph
 
   err = rsa.VerifyPSS(peerPubKey, newhash, hashed, signatureBytes, &opts)
   if err != nil {
-    mlog.GetLogger().Fatal("Signature verification failed")
+    mlog.GetLogger().Fatal("Signature verification failed: ", err)
   }
 
   return string(plainTextBytes)

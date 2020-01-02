@@ -1,6 +1,8 @@
 package mcrypto_key
 
 import (
+  "../../../util"
+  "../../config"
   "bytes"
   "crypto/rsa"
   "crypto/x509"
@@ -9,13 +11,11 @@ import (
   "encoding/pem"
   "errors"
   "fmt"
-  "gitlab.neji.vm.tc/marconi/log"
+  mlog "github.com/MarconiProtocol/log"
   "io/ioutil"
   "math/big"
   "strings"
   "sync"
-
-  "../../../util"
 )
 
 // TODO: Refactor such that the Peer object will be the owner of its own private/public keys. The management logic can be merged into PeerManager
@@ -33,7 +33,7 @@ var instance *KeyManager
 var once sync.Once
 
 const (
-  PRIVATE_KEY_PATH = "/opt/marconi/etc/marconid/keys/mpkey"
+  PRIVATE_KEY_PATH = "/etc/marconid/keys/mpkey"
   PUBLIC_KEY_PATH  = PRIVATE_KEY_PATH + ".pub"
 )
 
@@ -52,7 +52,7 @@ func (km *KeyManager) initialize() {
 }
 
 func (km *KeyManager) EnsurePrivatePublicKeysGenerated() {
-  _, err := readKeyFile(PRIVATE_KEY_PATH)
+  _, err := readKeyFile(mconfig.GetUserConfig().Global.Base_Dir + PRIVATE_KEY_PATH)
   if err != nil {
     // no private key file found, assume none exists, generate new private and public keys
     km.generatePrivatePublicKeyPair()
@@ -61,7 +61,7 @@ func (km *KeyManager) EnsurePrivatePublicKeysGenerated() {
 }
 
 func (km *KeyManager) LoadDefaultBaseKey() {
-  km.LoadBaseKey(PRIVATE_KEY_PATH)
+  km.LoadBaseKey(mconfig.GetUserConfig().Global.Base_Dir + PRIVATE_KEY_PATH)
 }
 
 func (km *KeyManager) LoadBaseKey(path string) {
@@ -152,13 +152,16 @@ func decodePublicKeyB64String(encodedPeerPubKey string) *rsa.PublicKey {
 func writeKeyToFile(pubKey *rsa.PublicKey, filename string) {
   pubKeyBytes, err := x509.MarshalPKIXPublicKey(pubKey)
   if err != nil {
-    mlog.GetLogger().Fatal("Error marshalling public key to pkix bytes")
+    mlog.GetLogger().Fatal("Error marshalling public key to pkix bytes: ", err)
   }
   pubKeyFileBytes := pem.EncodeToMemory(&pem.Block{
     Type:  "RSA PUBLIC KEY",
     Bytes: pubKeyBytes,
   })
-  ioutil.WriteFile(filename, pubKeyFileBytes, 0644)
+  err = ioutil.WriteFile(filename, pubKeyFileBytes, 0644)
+  if err != nil {
+    mlog.GetLogger().Fatal("Error writing key to file: ", err)
+  }
 }
 
 func getRsaValues(data []byte) (format string, e *big.Int, n *big.Int, err error) {
@@ -217,19 +220,19 @@ func LoadRSAPubKey(pubKeyFilePath string) (pubKey *rsa.PublicKey, err error) {
   }
   tokens := strings.Split(string(keyByte), " ")
   if len(tokens) < 2 {
-    fmt.Errorf("Invalid key format; must contain at least two fields (keytype data [comment])")
+    fmt.Println("Invalid key format; must contain at least two fields (keytype data [comment])")
     return nil, err
   }
   //fmt.Println("pubKeyStr/tokens:", tokens)
   key_type := tokens[0]
   data, err := base64.StdEncoding.DecodeString(tokens[1])
   if err != nil {
-    fmt.Errorf("failed to decode string %s", tokens[1])
+    fmt.Printf("failed to decode string %s", tokens[1])
     return nil, err
   }
   format, e, n, err := getRsaValues(data)
   if format != key_type {
-    fmt.Errorf("Key type said %s, but encoded format said %s.  These should match!", key_type, format)
+    fmt.Printf("Key type said %s, but encoded format said %s.  These should match!", key_type, format)
     return nil, err
   }
   pubKey = &rsa.PublicKey{

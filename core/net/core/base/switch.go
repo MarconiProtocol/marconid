@@ -3,17 +3,15 @@
 package mnet_core_base
 
 import (
+  "../../../../core"
+  "../../../runtime"
+  "../../vars"
   "errors"
   "fmt"
+  mlog "github.com/MarconiProtocol/log"
+  "github.com/MarconiProtocol/netlink"
   "io/ioutil"
   "sync"
-
-  "../../../../core"
-  "../../vars"
-
-  "../../../runtime"
-  "gitlab.neji.vm.tc/marconi/log"
-  "gitlab.neji.vm.tc/marconi/netlink"
 )
 
 //binder could exist in two mode bridge or bond
